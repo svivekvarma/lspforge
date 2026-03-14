@@ -20,8 +20,11 @@ describe("E2E: lspforge install typescript-language-server", { timeout: 120_000 
   beforeAll(async () => {
     fakeHome = await mkdtemp(join(tmpdir(), "lspforge-e2e-home-"));
 
+    // Match getDataDir() logic per platform
     if (isWindows) {
       dataDir = join(fakeHome, "AppData", "Local", "lspforge");
+    } else if (platform() === "darwin") {
+      dataDir = join(fakeHome, ".lspforge");
     } else {
       dataDir = join(fakeHome, ".local", "share", "lspforge");
     }
