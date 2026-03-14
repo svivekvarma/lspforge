@@ -2,27 +2,27 @@
 
 ## Overview
 
-`lspforge` is an npm CLI that installs, manages, and configures LSP servers for AI coding tools. Think mason.nvim but for Claude Code, Copilot CLI, Codex, Gemini CLI, and VS Code Copilot.
+`lspforge` is an npm CLI that installs, manages, and configures LSP servers for AI coding tools. Think mason.nvim but for Claude Code, Copilot CLI, and OpenCode/Crush.
 
 ## Target Clients
 
-### MVP (Phase 1) — Native LSP Config
+### Supported Clients — Native LSP Only
 | Client | Config File | Format | Integration |
 |--------|------------|--------|-------------|
 | Claude Code | `~/.claude/plugins/lspforge/.lsp.json` | JSON (LSP plugin) | Native LSP |
 | GitHub Copilot CLI | `~/.copilot/lsp-config.json` | JSON (`lspServers`) | Native LSP |
-| OpenAI Codex | `~/.codex/config.toml` | TOML (`[mcp_servers.<name>]`) | MCP (no LSP support) |
+| OpenCode / Crush | `opencode.json` / `.crush.json` (project root) | JSON (`lsp`) | Native LSP |
 
-### Phase 2
-| Client | Config File | Format | Integration |
-|--------|------------|--------|-------------|
-| Gemini CLI | TBD | TBD | MCP (no LSP support yet) |
-| VS Code Copilot | `.vscode/mcp.json` | JSON (`servers`) | MCP |
-| Claude Desktop | `claude_desktop_config.json` | JSON (`mcpServers`) | MCP |
+### Not Supported (No Native LSP)
+| Client | Reason | Status |
+|--------|--------|--------|
+| Gemini CLI | MCP only | Watching for LSP support |
+| OpenAI Codex | MCP only | Watching for LSP support |
+| Cline CLI | MCP only | Not planned |
 
 ### Strategy
-- **Native LSP** where the client supports it (Claude Code, Copilot CLI) — gives real code intelligence (diagnostics, go-to-definition, find-references)
-- **MCP fallback** for clients without LSP support (Codex, Gemini CLI) — wraps LSP as MCP server
+- **Native LSP only** — lspforge only targets clients with native LSP support (Claude Code, Copilot CLI, OpenCode/Crush)
+- **No MCP fallback** — LSP and MCP are different protocols. Writing an LSP server as an MCP entry doesn't work.
 
 ## CLI Commands
 
@@ -57,7 +57,7 @@ src/
     index.ts                # Client interface + auto-detection
     claude-code.ts          # Writes ~/.claude/plugins/lspforge/.lsp.json (native LSP plugin)
     copilot-cli.ts          # Deep-merges ~/.copilot/lsp-config.json (native LSP config)
-    codex.ts                # Appends to ~/.codex/config.toml (MCP — no LSP support)
+    opencode.ts             # Writes opencode.json / .crush.json (native LSP config)
   health/
     lsp-check.ts            # Spawn server, send LSP initialize, validate response
   detect/
@@ -211,14 +211,14 @@ Spawns the server process, sends a proper LSP `initialize` request via JSON-RPC 
 | Test | vitest | ESM native, fast |
 | Logging | consola | Colors, levels, structured |
 | HTTP | ofetch | Downloads, retries |
-| TOML | smol-toml | For Codex config.toml |
+| TOML | _(removed)_ | Codex dropped — no LSP support |
 
 ## Config Ownership
 
 Managed entries are tagged so `lspforge uninstall` can remove them cleanly:
 - **Claude Code**: Entire `~/.claude/plugins/lspforge/` directory is managed by lspforge. Removing the last server cleans up the plugin directory.
 - **Copilot CLI**: `"_managed_by": "lspforge"` field on each `lspServers` entry in `lsp-config.json`
-- **Codex (MCP)**: `_managed_by = "lspforge"` field on each `mcp_servers` entry in `config.toml`
+- **OpenCode/Crush**: `"_managed_by": "lspforge"` field on each `lsp` entry in `opencode.json` / `.crush.json`
 
 Deep-merge strategy: read existing config, only touch entries we manage, preserve everything else, match existing indentation.
 

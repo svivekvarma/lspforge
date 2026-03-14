@@ -2,7 +2,7 @@
 
 ## What Is This?
 
-A **mason.nvim-style package manager for AI coding tools** — a CLI that installs, manages, and configures LSP and MCP servers across Claude Code, GitHub Copilot CLI, Cursor, Windsurf, and VS Code.
+A **mason.nvim-style package manager for AI coding tools** — a CLI that installs, manages, and configures LSP servers across Claude Code, GitHub Copilot CLI, and OpenCode/Crush.
 
 ## The Problem
 
@@ -34,7 +34,7 @@ An npm package (CLI tool) that:
 
 1. **Detects your environment** — Which AI tools are installed? What OS/platform? What languages does your project use?
 2. **Installs LSP server binaries** — Downloads/installs the right server for each language using the right package manager (npm, pip, cargo, go, binary download), sandboxed to avoid system pollution.
-3. **Generates config** — Writes the correct native LSP config for each detected AI tool (Claude Code `.lsp.json` plugin, Copilot CLI `lsp-config.json`), falling back to MCP config for tools without LSP support (Codex, Gemini CLI).
+3. **Generates config** — Writes the correct native LSP config for each detected AI tool (Claude Code `.lsp.json` plugin, Copilot CLI `lsp-config.json`, OpenCode/Crush `opencode.json`). Only targets tools with native LSP support — no MCP fallback (LSP ≠ MCP).
 4. **Handles platform quirks** — Windows `.cmd` wrapper workarounds, correct file URI formats, proper line endings.
 5. **Health checks** — Verifies servers start, respond to `initialize`, and are actually functional.
 6. **Declarative config** — A single `lspconfig.yaml` (or similar) where users list desired servers; the tool ensures they're installed and configured.

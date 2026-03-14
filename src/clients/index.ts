@@ -1,7 +1,7 @@
 import { commandExists } from "../utils/spawn.js";
 import { configureClaudeCode } from "./claude-code.js";
 import { configureCopilotCli } from "./copilot-cli.js";
-import { configureCodex } from "./codex.js";
+import { configureOpenCode } from "./opencode.js";
 
 export interface ClientConfig {
   serverName: string;
@@ -49,12 +49,14 @@ export async function detectClients(): Promise<DetectedClient[]> {
       },
     },
     {
-      name: "Codex",
-      check: () => commandExists("codex"),
+      name: "OpenCode",
+      check: async () =>
+        (await commandExists("opencode")) ||
+        (await commandExists("crush")),
       client: {
-        name: "Codex",
-        configure: configureCodex,
-        unconfigure: unconfigureCodex,
+        name: "OpenCode",
+        configure: configureOpenCode,
+        unconfigure: unconfigureOpenCode,
       },
     },
   ];
@@ -79,7 +81,7 @@ async function unconfigureCopilotCli(serverName: string): Promise<void> {
   await fn(serverName);
 }
 
-async function unconfigureCodex(serverName: string): Promise<void> {
-  const { unconfigureCodex: fn } = await import("./codex.js");
+async function unconfigureOpenCode(serverName: string): Promise<void> {
+  const { unconfigureOpenCode: fn } = await import("./opencode.js");
   await fn(serverName);
 }

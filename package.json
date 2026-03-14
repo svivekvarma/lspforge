@@ -34,8 +34,7 @@
     "citty": "^0.2.1",
     "consola": "^3.4.2",
     "js-yaml": "^4.1.1",
-    "ofetch": "^1.5.1",
-    "smol-toml": "^1.6.0"
+    "ofetch": "^1.5.1"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

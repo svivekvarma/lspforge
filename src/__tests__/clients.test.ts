@@ -3,7 +3,6 @@ import { join } from "node:path";
 import { mkdtemp, readFile, writeFile, rm, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { parse as parseToml } from "smol-toml";
 import {
   configureClaudeCode,
   unconfigureClaudeCode,
@@ -13,9 +12,9 @@ import {
   unconfigureCopilotCli,
 } from "../clients/copilot-cli.js";
 import {
-  configureCodex,
-  unconfigureCodex,
-} from "../clients/codex.js";
+  configureOpenCode,
+  unconfigureOpenCode,
+} from "../clients/opencode.js";
 
 // ─── Claude Code ───────────────────────────────────────────────────────────
 // configureClaudeCode reads homedir() at call time, so overriding
@@ -242,31 +241,28 @@ describe("Copilot CLI config writer", () => {
   });
 });
 
-// ─── OpenAI Codex ──────────────────────────────────────────────────────────
+// ─── OpenCode/Crush ────────────────────────────────────────────────────────
 
-describe("Codex config writer", () => {
+describe("OpenCode config writer", () => {
   let tempDir: string;
   let configPath: string;
-  let originalHome: string | undefined;
-  let originalUserprofile: string | undefined;
+  let originalCwd: string;
 
   beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), "lspforge-codex-test-"));
-    originalHome = process.env.HOME;
-    originalUserprofile = process.env.USERPROFILE;
-    process.env.HOME = tempDir;
-    process.env.USERPROFILE = tempDir;
-    configPath = join(tempDir, ".codex", "config.toml");
+    tempDir = await mkdtemp(join(tmpdir(), "lspforge-opencode-test-"));
+    configPath = join(tempDir, "opencode.json");
+    // OpenCode reads config from cwd, so we need to change cwd
+    originalCwd = process.cwd();
+    process.chdir(tempDir);
   });
 
   afterEach(async () => {
-    if (originalHome === undefined) { delete process.env.HOME; } else { process.env.HOME = originalHome; }
-    if (originalUserprofile === undefined) { delete process.env.USERPROFILE; } else { process.env.USERPROFILE = originalUserprofile; }
+    process.chdir(originalCwd);
     await rm(tempDir, { recursive: true });
   });
 
-  it("creates config.toml from scratch", async () => {
-    await configureCodex({
+  it("creates opencode.json from scratch", async () => {
+    await configureOpenCode({
       serverName: "pyright",
       binPath: "/usr/bin/pyright",
       args: ["--stdio"],
@@ -274,100 +270,113 @@ describe("Codex config writer", () => {
     });
 
     expect(existsSync(configPath)).toBe(true);
-    const content = await readFile(configPath, "utf-8");
-    const config = parseToml(content) as Record<string, unknown>;
-    const mcpServers = config.mcp_servers as Record<string, unknown>;
-    const pyright = mcpServers.pyright as Record<string, unknown>;
+    const config = JSON.parse(await readFile(configPath, "utf-8"));
+    const lsp = config.lsp as Record<string, unknown>;
+    const pyright = lsp.pyright as Record<string, unknown>;
     expect(pyright._managed_by).toBe("lspforge");
     expect(pyright.command).toBe("/usr/bin/pyright");
     expect(pyright.args).toEqual(["--stdio"]);
+    expect(pyright.extensions).toEqual([".py"]);
   });
 
-  it("appends to existing TOML preserving other sections", async () => {
-    await mkdir(join(tempDir, ".codex"), { recursive: true });
+  it("appends to existing config preserving other sections", async () => {
     await writeFile(
       configPath,
-      `model = "gpt-4"\n\n[settings]\ntheme = "dark"\n`,
+      JSON.stringify({ model: "gpt-4", theme: "dark" }, null, 2),
     );
 
-    await configureCodex({
+    await configureOpenCode({
       serverName: "pyright",
       binPath: "/usr/bin/pyright",
       args: ["--stdio"],
       extensionToLanguage: { ".py": "python" },
     });
 
-    const content = await readFile(configPath, "utf-8");
-    const config = parseToml(content) as Record<string, unknown>;
+    const config = JSON.parse(await readFile(configPath, "utf-8"));
     expect(config.model).toBe("gpt-4");
-    const settings = config.settings as Record<string, unknown>;
-    expect(settings.theme).toBe("dark");
-    const mcpServers = config.mcp_servers as Record<string, unknown>;
-    expect(mcpServers.pyright).toBeDefined();
+    expect(config.theme).toBe("dark");
+    expect(config.lsp.pyright).toBeDefined();
   });
 
   it("appends second server alongside first", async () => {
-    await configureCodex({
+    await configureOpenCode({
       serverName: "pyright",
       binPath: "/usr/bin/pyright",
       args: ["--stdio"],
       extensionToLanguage: { ".py": "python" },
     });
-    await configureCodex({
+    await configureOpenCode({
       serverName: "gopls",
       binPath: "/usr/bin/gopls",
       args: ["serve"],
       extensionToLanguage: { ".go": "go" },
     });
 
-    const content = await readFile(configPath, "utf-8");
-    const config = parseToml(content) as Record<string, unknown>;
-    const mcpServers = config.mcp_servers as Record<string, unknown>;
-    expect(mcpServers.pyright).toBeDefined();
-    expect(mcpServers.gopls).toBeDefined();
+    const config = JSON.parse(await readFile(configPath, "utf-8"));
+    expect(config.lsp.pyright).toBeDefined();
+    expect(config.lsp.gopls).toBeDefined();
+  });
+
+  it("uses .crush.json if it exists", async () => {
+    const crushPath = join(tempDir, ".crush.json");
+    await writeFile(crushPath, JSON.stringify({ lsp: {} }, null, 2));
+
+    await configureOpenCode({
+      serverName: "pyright",
+      binPath: "/usr/bin/pyright",
+      args: ["--stdio"],
+      extensionToLanguage: { ".py": "python" },
+    });
+
+    // Should write to .crush.json, not opencode.json
+    const config = JSON.parse(await readFile(crushPath, "utf-8"));
+    expect(config.lsp.pyright).toBeDefined();
+    expect(existsSync(configPath)).toBe(false);
   });
 
   it("unconfigure only removes _managed_by entries", async () => {
-    await mkdir(join(tempDir, ".codex"), { recursive: true });
     await writeFile(
       configPath,
-      [
-        `[mcp_servers.pyright]`,
-        `_managed_by = "lspforge"`,
-        `command = "/usr/bin/pyright"`,
-        `args = ["--stdio"]`,
-        ``,
-        `[mcp_servers.user-server]`,
-        `command = "/opt/user-server"`,
-        `args = []`,
-      ].join("\n") + "\n",
+      JSON.stringify(
+        {
+          lsp: {
+            pyright: {
+              _managed_by: "lspforge",
+              command: "/usr/bin/pyright",
+              args: ["--stdio"],
+            },
+            "user-server": { command: "/opt/user-server", args: [] },
+          },
+        },
+        null,
+        2,
+      ),
     );
 
-    await unconfigureCodex("pyright");
+    await unconfigureOpenCode("pyright");
 
-    const content = await readFile(configPath, "utf-8");
-    const config = parseToml(content) as Record<string, unknown>;
-    const mcpServers = config.mcp_servers as Record<string, unknown>;
-    expect(mcpServers.pyright).toBeUndefined();
-    expect(mcpServers["user-server"]).toBeDefined();
+    const config = JSON.parse(await readFile(configPath, "utf-8"));
+    expect(config.lsp.pyright).toBeUndefined();
+    expect(config.lsp["user-server"]).toBeDefined();
   });
 
   it("unconfigure does not remove entry without _managed_by tag", async () => {
-    await mkdir(join(tempDir, ".codex"), { recursive: true });
     await writeFile(
       configPath,
-      [
-        `[mcp_servers.pyright]`,
-        `command = "/usr/bin/pyright"`,
-        `args = ["--stdio"]`,
-      ].join("\n") + "\n",
+      JSON.stringify(
+        {
+          lsp: {
+            pyright: { command: "/usr/bin/pyright", args: ["--stdio"] },
+          },
+        },
+        null,
+        2,
+      ),
     );
 
-    await unconfigureCodex("pyright");
+    await unconfigureOpenCode("pyright");
 
-    const content = await readFile(configPath, "utf-8");
-    const config = parseToml(content) as Record<string, unknown>;
-    const mcpServers = config.mcp_servers as Record<string, unknown>;
-    expect(mcpServers.pyright).toBeDefined();
+    const config = JSON.parse(await readFile(configPath, "utf-8"));
+    expect(config.lsp.pyright).toBeDefined();
   });
 });
