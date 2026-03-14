@@ -21,14 +21,26 @@ export async function checkLspHealth(
   const start = Date.now();
 
   return new Promise<HealthResult>((resolve) => {
+    let resolved = false;
+    const done = (result: HealthResult) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+
     const proc = crossSpawn(binPath, args, {
       stdio: ["pipe", "pipe", "pipe"],
     });
 
+    // Suppress EPIPE errors on stdin — the server may exit before
+    // we finish the shutdown sequence, which is fine.
+    proc.stdin?.on("error", () => {});
+
     let stdout = "";
     const timer = setTimeout(() => {
       proc.kill();
-      resolve({
+      done({
         status: "timeout",
         serverName,
         responseTimeMs: Date.now() - start,
@@ -37,8 +49,7 @@ export async function checkLspHealth(
     }, timeoutMs);
 
     proc.on("error", (err) => {
-      clearTimeout(timer);
-      resolve({
+      done({
         status: "error",
         serverName,
         responseTimeMs: Date.now() - start,
@@ -51,37 +62,39 @@ export async function checkLspHealth(
 
       // Look for a complete LSP response
       if (stdout.includes('"capabilities"')) {
-        clearTimeout(timer);
-        // Send shutdown
-        sendLspRequest(proc.stdin!, 2, "shutdown", null);
-        setTimeout(() => {
-          sendLspNotification(proc.stdin!, "exit");
-          proc.kill();
-        }, 500);
-
-        resolve({
+        done({
           status: "ok",
           serverName,
           responseTimeMs: Date.now() - start,
         });
+
+        // Clean shutdown — best effort, ignore errors
+        try {
+          safeSend(proc.stdin!, 2, "shutdown", null);
+          setTimeout(() => {
+            safeSend(proc.stdin!, null, "exit", undefined);
+            proc.kill();
+          }, 200);
+        } catch {
+          proc.kill();
+        }
       }
     });
 
     proc.on("close", () => {
-      clearTimeout(timer);
-      if (!stdout.includes('"capabilities"')) {
-        resolve({
-          status: "error",
-          serverName,
-          responseTimeMs: Date.now() - start,
-          error: "Server exited without responding to initialize",
-        });
-      }
+      done({
+        status: stdout.includes('"capabilities"') ? "ok" : "error",
+        serverName,
+        responseTimeMs: Date.now() - start,
+        error: stdout.includes('"capabilities"')
+          ? undefined
+          : "Server exited without responding to initialize",
+      });
     });
 
     // Send LSP initialize request
     const rootUri = toFileUri(tmpdir());
-    sendLspRequest(proc.stdin!, 1, "initialize", {
+    safeSend(proc.stdin!, 1, "initialize", {
       processId: process.pid,
       capabilities: {},
       rootUri,
@@ -90,30 +103,24 @@ export async function checkLspHealth(
   });
 }
 
-function sendLspRequest(
+/**
+ * Send an LSP JSON-RPC message, ignoring write errors.
+ */
+function safeSend(
   stream: NodeJS.WritableStream,
-  id: number,
+  id: number | null,
   method: string,
   params: unknown,
 ): void {
-  const body = JSON.stringify({
-    jsonrpc: "2.0",
-    id,
-    method,
-    params,
-  });
-  const header = `Content-Length: ${Buffer.byteLength(body)}\r\n\r\n`;
-  stream.write(header + body);
-}
+  const msg: Record<string, unknown> = { jsonrpc: "2.0", method };
+  if (id !== null) msg.id = id;
+  if (params !== undefined) msg.params = params;
 
-function sendLspNotification(
-  stream: NodeJS.WritableStream,
-  method: string,
-): void {
-  const body = JSON.stringify({
-    jsonrpc: "2.0",
-    method,
-  });
+  const body = JSON.stringify(msg);
   const header = `Content-Length: ${Buffer.byteLength(body)}\r\n\r\n`;
-  stream.write(header + body);
+  try {
+    stream.write(header + body);
+  } catch {
+    // Server already exited — ignore
+  }
 }
