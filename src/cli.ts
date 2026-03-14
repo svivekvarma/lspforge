@@ -9,7 +9,7 @@ import { initCommand } from "./commands/init.js";
 const main = defineCommand({
   meta: {
     name: "lspforge",
-    version: "0.1.2",
+    version: "0.2.0",
     description:
       "Mason.nvim-style LSP server manager for AI coding tools",
   },
