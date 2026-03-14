@@ -57,8 +57,8 @@ Every piece of work (feature, fix, chore) follows this process:
 4. **Run tests and validate** (`npm run typecheck && npm run build && npx vitest run`)
 5. **Push to the remote branch**
 6. **Create a PR** linked to the issue
-7. **Wait for PR approval** from `svivekvarma` — do NOT merge without approval
-8. **Squash and merge** once approved
+7. **Wait for CI to pass** — do NOT merge with failing checks
+8. **Squash and merge** once CI is green
 9. **Update and close the issue**
 10. **Feature docs** go in `features/<feature-name>/` (one folder per feature, multiple artifacts allowed)
 11. **After merge**, move the feature folder to `features/archive/` via a `docs:` PR
@@ -78,6 +78,6 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ## Branch Protection
 
-- `main` requires at least one approving review (enforced via `CODEOWNERS`: `* @svivekvarma`)
-- PR validation CI must pass before merge
+- `main` requires PR validation CI to pass before merge
+- Direct pushes to `main` are blocked — all changes go through PRs
 - The test pipeline is skipped for changes limited to `**/*.md`, `docs/**`, `features/**`, and `LICENSE`
