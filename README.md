@@ -195,6 +195,36 @@ We take supply chain security seriously:
 - **Managed config entries** — Tagged with `_managed_by: lspforge` so we never touch your manual config
 - **No auto-install without confirmation** — `lspforge init` shows you what it'll do first
 
+## 🧪 Testing
+
+lspforge is tested across **3 operating systems** and **2 Node.js versions** on every push.
+
+### CI Matrix (GitHub Actions)
+
+| | Ubuntu | Windows | macOS |
+|---|---|---|---|
+| **Node 20** | ✅ | ✅ | ✅ |
+| **Node 22** | ✅ | ✅ | ✅ |
+
+Each CI job runs: typecheck → build → 40 unit tests → 7 CLI smoke tests (including a real `pyright` install + LSP health check).
+
+### Local Testing
+
+```bash
+# Run unit tests
+npm test
+
+# Test on Linux via Docker
+docker build -f Dockerfile.test .
+# or
+./scripts/test-linux.sh ubuntu
+
+# Test on Windows natively (use Windows Sandbox for a clean env)
+.\scripts\test-windows.ps1
+```
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for more details on the test setup.
+
 ## 📖 Deep Dive
 
 Want to understand the thinking behind lspforge?
@@ -212,6 +242,7 @@ Want to understand the thinking behind lspforge?
 - [x] npm, pip, cargo, go, binary installers
 - [x] Claude Code, Copilot CLI, Codex clients
 - [x] 5 bundled server definitions
+- [x] Cross-platform CI (Linux, Windows, macOS × Node 20, 22)
 - [x] LSP health checks
 - [x] Windows-first platform handling
 - [ ] `lspforge search` command

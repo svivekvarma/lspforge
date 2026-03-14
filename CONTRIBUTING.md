@@ -199,12 +199,70 @@ npm run typecheck    # Type check without emitting
 
 Every PR should include tests. We use [vitest](https://vitest.dev/). Tests live in `src/__tests__/`.
 
-Run tests:
+#### Unit Tests
+
 ```bash
-npm test              # Run all tests
+npm test              # Run all tests (watch mode)
 npx vitest run        # Run once (CI mode)
-npx vitest --watch    # Watch mode
+npx vitest --watch    # Explicit watch mode
 ```
+
+Current test coverage:
+- `platform.test.ts` — OS/arch detection
+- `paths.test.ts` — Data directory resolution per platform
+- `registry.test.ts` — Package loading, listing, searching
+- `languages.test.ts` — Project language detection from indicator files
+- `json-merge.test.ts` — Deep merge logic, config file preservation
+- `file-uri.test.ts` — Windows `file:///C:/` URI generation
+- `spawn.test.ts` — Cross-platform process spawning, command detection
+- `installers.test.ts` — Installer selection priority and fallback logic
+
+#### Cross-Platform Testing
+
+lspforge is tested on **3 operating systems × 2 Node.js versions = 6 environments** on every push via GitHub Actions.
+
+| | Ubuntu | Windows | macOS |
+|---|---|---|---|
+| **Node 20** | ✅ | ✅ | ✅ |
+| **Node 22** | ✅ | ✅ | ✅ |
+
+Each CI job runs: typecheck → build → unit tests → 7 CLI smoke tests (including a real `pyright` install + LSP health check).
+
+#### Local Cross-Platform Testing
+
+You don't need all 3 OSes to test locally. Here's how to cover them:
+
+**Linux (via Docker)** — works from any OS with Docker:
+```bash
+# Full test suite in a Linux container
+docker build -f Dockerfile.test .
+
+# Interactive testing with different distros
+./scripts/test-linux.sh ubuntu
+./scripts/test-linux.sh alpine
+```
+
+**Windows (native)** — if you're on Windows:
+```powershell
+# Full test suite (use Windows Sandbox for a clean env)
+.\scripts\test-windows.ps1
+```
+
+**macOS** — handled by GitHub Actions CI. If you don't have a Mac, just push your PR and the CI will test it. No local Mac hardware required.
+
+#### What the CI Smoke Tests Verify
+
+The smoke tests go beyond unit tests — they run real CLI operations end-to-end:
+
+1. `lspforge --help` — CLI boots and shows commands
+2. `lspforge doctor` — Platform detection, runtime probing, client detection
+3. `lspforge list --available` — Registry loads and lists packages
+4. `lspforge install pyright` — Full install pipeline (npm download, binary verification)
+5. `lspforge check pyright` — Real LSP initialize handshake over stdio
+6. `lspforge list` — State file written correctly
+7. `lspforge uninstall pyright` — Clean removal of server files
+
+This catches platform-specific issues that unit tests miss: `.cmd` wrapper spawning on Windows, path separator handling, file URI format differences, and LSP JSON-RPC line ending requirements.
 
 ## 🗺️ Areas That Need Help
 
@@ -212,7 +270,6 @@ npx vitest --watch    # Watch mode
 - **Phase 2 clients** — Gemini CLI (`~/.gemini/settings.json`), VS Code Copilot (`.vscode/mcp.json`), Claude Desktop
 - **`lspforge update` command** — update installed servers to latest versions
 - **`lspforge search` command** — search the registry
-- **CI/CD** — GitHub Actions for testing across platforms
 - **Better health check diagnostics** — parse LSP error responses, suggest fixes
 
 ## 📄 License

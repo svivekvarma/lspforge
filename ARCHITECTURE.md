@@ -212,3 +212,35 @@ Managed entries are tagged so `lspforge uninstall` can remove them cleanly:
 - **Claude Code**: Uses `claude mcp remove` CLI command
 
 Deep-merge strategy: read existing config, only touch entries we manage, preserve everything else, match existing indentation.
+
+## Testing Strategy
+
+### Layers
+
+1. **Unit tests** (vitest) — Pure logic: platform detection, registry parsing, JSON merging, installer selection, file URI generation. Fast, no I/O.
+2. **CLI smoke tests** (CI + local) — Real end-to-end: install pyright via npm, run LSP health check, verify state, uninstall. Catches platform-specific issues.
+3. **Cross-platform matrix** (GitHub Actions) — 3 OSes × 2 Node versions = 6 environments on every push.
+
+### CI Matrix
+
+| | Ubuntu | Windows | macOS |
+|---|---|---|---|
+| **Node 20** | ✅ | ✅ | ✅ |
+| **Node 22** | ✅ | ✅ | ✅ |
+
+### Local Testing
+
+| Platform | Method | Command |
+|----------|--------|---------|
+| Linux | Docker container (node:22-slim) | `docker build -f Dockerfile.test .` or `./scripts/test-linux.sh` |
+| Windows | Native (optionally in Windows Sandbox) | `.\scripts\test-windows.ps1` |
+| macOS | GitHub Actions only (requires Apple hardware) | Automatic on push |
+
+### What Smoke Tests Catch That Unit Tests Don't
+
+- Windows `.cmd` shim spawning via `shell: true`
+- File URI format differences (`file:///C:/` vs `file://`)
+- LSP JSON-RPC `\r\n` header line endings
+- npm `--prefix` sandboxing behavior per platform
+- Binary permissions (`chmod +x`) on Unix
+- Path separator handling in state.json
