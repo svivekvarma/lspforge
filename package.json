@@ -4,7 +4,7 @@
   "description": "Mason.nvim-style LSP server manager for AI coding tools",
   "type": "module",
   "bin": {
-    "lspforge": "./dist/cli.js"
+    "lspforge": "dist/cli.js"
   },
   "scripts": {
     "build": "tsup",
