@@ -19,17 +19,19 @@ const isWindows = platform() === "win32";
 
 /** Check that a runtime command is available on PATH. Tries multiple aliases. */
 function requireRuntime(...cmds: string[]): void {
+  const errors: string[] = [];
   for (const cmd of cmds) {
     const result = spawnSync(cmd, ["--version"], {
       encoding: "utf-8",
       timeout: 10_000,
-      shell: isWindows,
+      shell: true,
       stdio: "pipe",
     });
-    if (result.status === 0) return;
+    if (!result.error && result.status === 0) return;
+    errors.push(`${cmd}: status=${result.status} error=${result.error?.message ?? "none"} stderr=${(result.stderr ?? "").trim()}`);
   }
   throw new Error(
-    `Required runtime not found: ${cmds.join(" or ")}. ` +
+    `Required runtime not found: ${cmds.join(" or ")}. Details: [${errors.join("; ")}]. ` +
     `Ensure it is installed and on PATH in CI (setup-python, setup-go, etc.).`,
   );
 }
@@ -97,7 +99,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: npm installer (typescript-language-server)",
   });
 
   afterAll(async () => {
-    await rm(fakeHome, { recursive: true, force: true });
+    if (fakeHome) await rm(fakeHome, { recursive: true, force: true });
   });
 
   it("installs and exits cleanly", () => {
@@ -175,7 +177,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: pip installer (python-lsp-server)", { timeou
   });
 
   afterAll(async () => {
-    await rm(fakeHome, { recursive: true, force: true });
+    if (fakeHome) await rm(fakeHome, { recursive: true, force: true });
   });
 
   it("installs python-lsp-server via pip and exits cleanly", () => {
@@ -220,7 +222,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: go installer (gopls)", { timeout: 180_000 },
   });
 
   afterAll(async () => {
-    await rm(fakeHome, { recursive: true, force: true });
+    if (fakeHome) await rm(fakeHome, { recursive: true, force: true });
   });
 
   it("installs gopls via go and exits cleanly", () => {
@@ -265,7 +267,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: cargo installer (taplo)", { timeout: 300_000
   });
 
   afterAll(async () => {
-    await rm(fakeHome, { recursive: true, force: true });
+    if (fakeHome) await rm(fakeHome, { recursive: true, force: true });
   });
 
   it("installs taplo via cargo and exits cleanly", () => {
@@ -307,7 +309,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: binary installer (rust-analyzer)", { timeout
   });
 
   afterAll(async () => {
-    await rm(fakeHome, { recursive: true, force: true });
+    if (fakeHome) await rm(fakeHome, { recursive: true, force: true });
   });
 
   it("installs rust-analyzer via binary download and exits cleanly", () => {
