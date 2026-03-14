@@ -51,6 +51,7 @@ export const checkCommand = defineCommand({
         server.binPath,
         lspArgs,
         timeoutMs,
+        server.installPath,
       );
 
       // Update state
