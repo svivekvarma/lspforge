@@ -38,6 +38,8 @@ jobs:
 
       - name: Run tests
         run: npx vitest run
+        env:
+          LSPFORGE_E2E: "1"
 
       - name: CLI smoke tests
         run: |
