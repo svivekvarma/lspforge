@@ -1,0 +1,31 @@
+name: bash-language-server
+description: Language server for Bash and shell scripts
+languages:
+  - bash
+  - shell
+
+source:
+  npm:
+    package: bash-language-server
+    bin: bash-language-server
+    version: "5.4.3"
+
+lsp:
+  command: bash-language-server
+  args: ["start"]
+  file_patterns:
+    - "**/*.sh"
+    - "**/*.bash"
+    - "**/.bashrc"
+    - "**/.bash_profile"
+    - "**/Dockerfile"
+  extension_to_language:
+    ".sh": shellscript
+    ".bash": shellscript
+
+platforms:
+  win32:
+    spawn_shell: true
+
+health:
+  timeout_ms: 10000

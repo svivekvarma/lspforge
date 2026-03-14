@@ -1,0 +1,21 @@
+name: templ
+description: Language server for the Templ Go HTML templating language
+languages:
+  - templ
+
+source:
+  go:
+    package: github.com/a-h/templ/cmd/templ
+    bin: templ
+    version: "v0.3.833"
+
+lsp:
+  command: templ
+  args: ["lsp"]
+  file_patterns:
+    - "**/*.templ"
+  extension_to_language:
+    ".templ": templ
+
+health:
+  timeout_ms: 10000

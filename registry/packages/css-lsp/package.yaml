@@ -1,0 +1,31 @@
+name: css-lsp
+description: Language server for CSS, SCSS, and Less
+languages:
+  - css
+  - scss
+  - less
+
+source:
+  npm:
+    package: vscode-langservers-extracted
+    bin: vscode-css-language-server
+    version: "4.10.0"
+
+lsp:
+  command: vscode-css-language-server
+  args: ["--stdio"]
+  file_patterns:
+    - "**/*.css"
+    - "**/*.scss"
+    - "**/*.less"
+  extension_to_language:
+    ".css": css
+    ".scss": scss
+    ".less": less
+
+platforms:
+  win32:
+    spawn_shell: true
+
+health:
+  timeout_ms: 10000

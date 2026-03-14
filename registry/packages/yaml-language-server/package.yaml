@@ -1,0 +1,27 @@
+name: yaml-language-server
+description: Language server for YAML files with JSON Schema validation
+languages:
+  - yaml
+
+source:
+  npm:
+    package: yaml-language-server
+    bin: yaml-language-server
+    version: "1.15.0"
+
+lsp:
+  command: yaml-language-server
+  args: ["--stdio"]
+  file_patterns:
+    - "**/*.yaml"
+    - "**/*.yml"
+  extension_to_language:
+    ".yaml": yaml
+    ".yml": yaml
+
+platforms:
+  win32:
+    spawn_shell: true
+
+health:
+  timeout_ms: 10000

@@ -1,0 +1,31 @@
+name: taplo
+description: TOML language server and toolkit
+languages:
+  - toml
+
+source:
+  cargo:
+    package: taplo-cli
+    bin: taplo
+    version: "0.9.3"
+  npm:
+    package: "@taplo/cli"
+    bin: taplo
+    version: "0.7.0"
+
+lsp:
+  command: taplo
+  args: ["lsp", "stdio"]
+  file_patterns:
+    - "**/*.toml"
+    - "**/Cargo.toml"
+    - "**/pyproject.toml"
+  extension_to_language:
+    ".toml": toml
+
+platforms:
+  win32:
+    spawn_shell: true
+
+health:
+  timeout_ms: 10000
