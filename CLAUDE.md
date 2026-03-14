@@ -61,7 +61,7 @@ Every piece of work (feature, fix, chore) follows this process:
 8. **Squash and merge** once approved
 9. **Update and close the issue**
 10. **Feature docs** go in `features/<feature-name>/` (one folder per feature, multiple artifacts allowed)
-11. **After merge**, move the feature folder to `features/archive/` and push
+11. **After merge**, move the feature folder to `features/archive/` via a `docs:` PR
 
 ## Commit Conventions
 
@@ -69,13 +69,13 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 - `feat:` — new feature
 - `fix:` — bug fix
-- `docs:` — documentation only (does NOT trigger test pipeline)
+- `docs:` — documentation only changes
 - `chore:` — maintenance, tooling, CI
 - `refactor:` — code change that neither fixes a bug nor adds a feature
 - `test:` — adding or updating tests
 
 ## Branch Protection
 
-- `main` requires at least one approving review from `svivekvarma`
+- `main` requires at least one approving review (enforced via `CODEOWNERS`: `* @svivekvarma`)
 - PR validation CI must pass before merge
-- `docs:` commits and changes limited to `*.md`, `docs/**`, `features/**` skip the test pipeline
+- The test pipeline is skipped for changes limited to `**/*.md`, `docs/**`, `features/**`, and `LICENSE`
