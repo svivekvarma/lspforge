@@ -18,6 +18,11 @@ lsp:
     - "**/*.tsx"
     - "**/*.js"
     - "**/*.jsx"
+  extension_to_language:
+    ".ts": typescript
+    ".tsx": typescriptreact
+    ".js": javascript
+    ".jsx": javascriptreact
 
 platforms:
   win32:

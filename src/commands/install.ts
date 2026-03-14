@@ -145,6 +145,7 @@ export const installCommand = defineCommand({
               serverName,
               binPath: result.binPath,
               args: pkg.lsp.args,
+              extensionToLanguage: pkg.lsp.extension_to_language,
             });
           } catch (err) {
             consola.warn(

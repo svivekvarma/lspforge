@@ -27,7 +27,7 @@ Think "mason.nvim but for AI coding tools instead of Neovim."
 
 ## MVP Scope
 
-- **Clients**: Claude Code, GitHub Copilot CLI, OpenAI Codex
+- **Clients**: Claude Code (native LSP plugin), GitHub Copilot CLI (native LSP config), OpenAI Codex (MCP fallback)
 - **Installers**: npm, pip, cargo, go, binary downloads
 - **Servers**: 5-10 bundled (typescript-ls, pyright, rust-analyzer, gopls, eslint-lsp)
 

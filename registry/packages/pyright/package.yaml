@@ -19,6 +19,9 @@ lsp:
   file_patterns:
     - "**/*.py"
     - "**/*.pyi"
+  extension_to_language:
+    ".py": python
+    ".pyi": python
 
 platforms:
   win32:

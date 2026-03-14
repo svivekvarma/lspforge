@@ -22,6 +22,8 @@ lsp:
   file_patterns:
     - "**/*.rs"
     - "**/Cargo.toml"
+  extension_to_language:
+    ".rs": rust
 
 health:
   timeout_ms: 15000

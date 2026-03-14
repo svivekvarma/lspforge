@@ -91,9 +91,27 @@ Claude Code now has a native plugin marketplace:
 - `/plugin marketplace add user-or-org/repo-name` registers a marketplace
 - `/plugin` browses and installs plugins
 - 9,000+ plugins available as of Feb 2026
-- LSP servers configured as plugins with `lspServers` in plugin config
+- LSP servers configured as plugins with `.lsp.json` files containing `command`, `args`, `extensionToLanguage`
 
-**Implication**: Our tool should complement this system, not compete with it. We handle the binary installation + platform quirks; Claude Code's plugin system handles the IDE integration.
+**Implication**: lspforge complements this system — we install the binary + generate the `.lsp.json` plugin config. Claude Code's plugin system handles discovery and runtime.
+
+### GitHub Copilot CLI — Native LSP Support (GA Feb 2026)
+
+Copilot CLI has first-class LSP support:
+- Config: `~/.copilot/lsp-config.json` (user-level) or `.github/lsp.json` (repo-level)
+- Format: `{ "lspServers": { "name": { "command", "args", "fileExtensions" } } }`
+- Managed via `/lsp show|test|reload` slash commands in interactive sessions
+- Does NOT bundle LSP servers — users must install separately
+
+**Implication**: Same gap as Claude Code — nobody installs the binaries. lspforge fills this by installing + writing `lsp-config.json`.
+
+### OpenAI Codex CLI — No LSP Support (as of March 2026)
+
+Codex CLI supports MCP but NOT LSP. Open issues requesting it:
+- Issue #8745: "LSP integration (auto-detect + auto-install) for Codex CLI"
+- Issue #9964: "When to support LSP!!!!!"
+
+**Implication**: lspforge uses MCP config for Codex as a fallback until native LSP lands.
 
 ---
 

@@ -8,13 +8,13 @@ import consola from "consola";
 function getConfigPath(): string {
   return join(
     process.env.COPILOT_HOME || join(homedir(), ".copilot"),
-    "mcp-config.json",
+    "lsp-config.json",
   );
 }
 
 /**
  * Configure a server in GitHub Copilot CLI.
- * Writes to ~/.copilot/mcp-config.json
+ * Writes to ~/.copilot/lsp-config.json using native LSP config format.
  */
 export async function configureCopilotCli(
   config: ClientConfig,
@@ -22,21 +22,21 @@ export async function configureCopilotCli(
   const configPath = getConfigPath();
 
   await mergeJsonConfig(configPath, {
-    mcpServers: {
+    lspServers: {
       [config.serverName]: {
         _managed_by: "lspforge",
         command: config.binPath,
         args: config.args,
-        env: {},
+        fileExtensions: config.extensionToLanguage,
       },
     },
   });
 
-  consola.success(`Configured ${config.serverName} in GitHub Copilot CLI`);
+  consola.success(`Configured ${config.serverName} in GitHub Copilot CLI (LSP)`);
 }
 
 /**
- * Remove a managed server from Copilot CLI config.
+ * Remove a managed server from Copilot CLI LSP config.
  */
 export async function unconfigureCopilotCli(
   serverName: string,
@@ -45,8 +45,8 @@ export async function unconfigureCopilotCli(
   try {
     const content = await readFile(configPath, "utf-8");
     const config = JSON.parse(content);
-    if (config.mcpServers?.[serverName]?._managed_by === "lspforge") {
-      delete config.mcpServers[serverName];
+    if (config.lspServers?.[serverName]?._managed_by === "lspforge") {
+      delete config.lspServers[serverName];
       await writeFile(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
     }
   } catch {
