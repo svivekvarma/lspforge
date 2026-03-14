@@ -284,7 +284,7 @@ Triggered when a version tag (`v*`) is pushed:
 
 1. **Full validation** — Same cross-platform matrix as CI
 2. **Version check** — Verifies tag matches `package.json` version
-3. **npm publish** — Publishes to npm with `NPM_TOKEN` secret
+3. **npm publish** — Publishes to npm with `NPM_AUTHTOKEN` secret
 4. **GitHub Release** — Creates a release with auto-generated changelog
 
 #### How to Release (Maintainers)
@@ -299,7 +299,7 @@ npm version major   # 0.1.0 → 1.0.0
 git push --follow-tags
 ```
 
-The pipeline handles the rest. Requires `NPM_TOKEN` in GitHub repo secrets.
+The pipeline handles the rest. Requires `NPM_AUTHTOKEN` in GitHub repo secrets.
 
 ## 🗺️ Areas That Need Help
 
