@@ -251,7 +251,26 @@ Want to understand the thinking behind lspforge?
 - [ ] 20+ server definitions
 - [ ] Separate registry repo (community-contributable)
 - [ ] Declarative `lspconfig.yaml` for team sharing
-- [ ] CI/CD for registry validation
+- [x] CI/CD: PR validation, release pipeline, npm auto-publish
+
+## 🚢 Releasing
+
+Releases are fully automated via GitHub Actions:
+
+```bash
+# 1. Bump version in package.json
+npm version patch   # or minor / major
+
+# 2. Push the tag
+git push --follow-tags
+```
+
+This triggers the release pipeline:
+1. ✅ Full cross-platform validation (3 OSes × 2 Node versions)
+2. 📦 Publish to npm (version verified against tag)
+3. 🏷️ Create GitHub Release with auto-generated changelog
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
 
 ## 💬 Feedback
 

@@ -264,6 +264,43 @@ The smoke tests go beyond unit tests — they run real CLI operations end-to-end
 
 This catches platform-specific issues that unit tests miss: `.cmd` wrapper spawning on Windows, path separator handling, file URI format differences, and LSP JSON-RPC line ending requirements.
 
+## 🔄 CI/CD Workflows
+
+We have 3 GitHub Actions workflows:
+
+### `ci.yml` — Push to main
+Runs on every push to `main`. Full matrix: 3 OSes × 2 Node versions = 6 jobs. Typecheck, build, unit tests, and CLI smoke tests.
+
+### `pr.yml` — Pull Request Validation
+Runs on every PR targeting `main`:
+- **Cross-platform tests** — Ubuntu, Windows, macOS (Node 22)
+- **Registry validation** — Checks all `package.yaml` files have required fields (`name`, `description`, `languages`, `source`, `lsp`)
+- **PR summary** — Posts a status table to the GitHub Actions summary
+
+Your PR must pass all checks before it can be merged.
+
+### `release.yml` — Tag & Release
+Triggered when a version tag (`v*`) is pushed:
+
+1. **Full validation** — Same cross-platform matrix as CI
+2. **Version check** — Verifies tag matches `package.json` version
+3. **npm publish** — Publishes to npm with `NPM_TOKEN` secret
+4. **GitHub Release** — Creates a release with auto-generated changelog
+
+#### How to Release (Maintainers)
+
+```bash
+# Bump version (creates git tag automatically)
+npm version patch   # 0.1.0 → 0.1.1
+npm version minor   # 0.1.0 → 0.2.0
+npm version major   # 0.1.0 → 1.0.0
+
+# Push code + tag
+git push --follow-tags
+```
+
+The pipeline handles the rest. Requires `NPM_TOKEN` in GitHub repo secrets.
+
 ## 🗺️ Areas That Need Help
 
 - **More server definitions** — the registry is the product
