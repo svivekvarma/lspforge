@@ -46,3 +46,36 @@ Think "mason.nvim but for AI coding tools instead of Neovim."
 - Minimal dependencies (~7 runtime deps)
 - Cross-platform code paths tested
 - consola for logging, ofetch for HTTP
+
+## Development Workflow
+
+Every piece of work (feature, fix, chore) follows this process:
+
+1. **Create a GitHub issue** for the work item
+2. **Create a branch** from `main` (e.g. `feat/foo`, `fix/bar`, `chore/baz`)
+3. **Develop and iterate** on the branch
+4. **Run tests and validate** (`npm run typecheck && npm run build && npx vitest run`)
+5. **Push to the remote branch**
+6. **Create a PR** linked to the issue
+7. **Wait for PR approval** from `svivekvarma` — do NOT merge without approval
+8. **Squash and merge** once approved
+9. **Update and close the issue**
+10. **Feature docs** go in `features/<feature-name>/` (one folder per feature, multiple artifacts allowed)
+11. **After merge**, move the feature folder to `features/archive/` and push
+
+## Commit Conventions
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `feat:` — new feature
+- `fix:` — bug fix
+- `docs:` — documentation only (does NOT trigger test pipeline)
+- `chore:` — maintenance, tooling, CI
+- `refactor:` — code change that neither fixes a bug nor adds a feature
+- `test:` — adding or updating tests
+
+## Branch Protection
+
+- `main` requires at least one approving review from `svivekvarma`
+- PR validation CI must pass before merge
+- `docs:` commits and changes limited to `*.md`, `docs/**`, `features/**` skip the test pipeline

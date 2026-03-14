@@ -3,6 +3,11 @@ name: PR Validation
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - "*.md"
+      - "docs/**"
+      - "features/**"
+      - "LICENSE"
 
 jobs:
   validate:
