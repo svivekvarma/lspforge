@@ -1,0 +1,27 @@
+name: typescript-language-server
+description: TypeScript & JavaScript language server using tsserver
+languages:
+  - typescript
+  - javascript
+
+source:
+  npm:
+    package: typescript-language-server
+    bin: typescript-language-server
+    version: "4.3.3"
+
+lsp:
+  command: typescript-language-server
+  args: ["--stdio"]
+  file_patterns:
+    - "**/*.ts"
+    - "**/*.tsx"
+    - "**/*.js"
+    - "**/*.jsx"
+
+platforms:
+  win32:
+    spawn_shell: true
+
+health:
+  timeout_ms: 10000

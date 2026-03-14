@@ -1,0 +1,20 @@
+name: gopls
+description: Official Go language server
+languages:
+  - go
+
+source:
+  go:
+    package: golang.org/x/tools/gopls
+    bin: gopls
+    version: "v0.17.1"
+
+lsp:
+  command: gopls
+  args: ["serve"]
+  file_patterns:
+    - "**/*.go"
+    - "**/go.mod"
+
+health:
+  timeout_ms: 15000

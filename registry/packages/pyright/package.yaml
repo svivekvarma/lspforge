@@ -1,0 +1,28 @@
+name: pyright
+description: Static type checker and language server for Python
+languages:
+  - python
+
+source:
+  npm:
+    package: pyright
+    bin: pyright-langserver
+    version: "1.1.408"
+  pip:
+    package: pyright
+    bin: pyright-langserver
+    version: "1.1.408"
+
+lsp:
+  command: pyright-langserver
+  args: ["--stdio"]
+  file_patterns:
+    - "**/*.py"
+    - "**/*.pyi"
+
+platforms:
+  win32:
+    spawn_shell: true
+
+health:
+  timeout_ms: 10000

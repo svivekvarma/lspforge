@@ -1,0 +1,27 @@
+name: eslint-lsp
+description: ESLint language server for JavaScript/TypeScript linting
+languages:
+  - typescript
+  - javascript
+
+source:
+  npm:
+    package: vscode-langservers-extracted
+    bin: vscode-eslint-language-server
+    version: "4.10.0"
+
+lsp:
+  command: vscode-eslint-language-server
+  args: ["--stdio"]
+  file_patterns:
+    - "**/*.ts"
+    - "**/*.tsx"
+    - "**/*.js"
+    - "**/*.jsx"
+
+platforms:
+  win32:
+    spawn_shell: true
+
+health:
+  timeout_ms: 10000

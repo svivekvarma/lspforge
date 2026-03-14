@@ -1,0 +1,27 @@
+name: rust-analyzer
+description: LSP implementation for the Rust programming language
+languages:
+  - rust
+
+source:
+  github_release:
+    repo: rust-lang/rust-analyzer
+    tag: "2025-03-10"
+    assets:
+      linux_x64: rust-analyzer-x86_64-unknown-linux-gnu.gz
+      linux_arm64: rust-analyzer-aarch64-unknown-linux-gnu.gz
+      darwin_x64: rust-analyzer-x86_64-apple-darwin.gz
+      darwin_arm64: rust-analyzer-aarch64-apple-darwin.gz
+      win_x64: rust-analyzer-x86_64-pc-windows-msvc.zip
+    bin: rust-analyzer
+    extract: gzip
+
+lsp:
+  command: rust-analyzer
+  args: []
+  file_patterns:
+    - "**/*.rs"
+    - "**/Cargo.toml"
+
+health:
+  timeout_ms: 15000
