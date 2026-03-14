@@ -60,7 +60,7 @@ Every piece of work (feature, fix, chore) follows this process:
 7. **Wait for CI to pass** — do NOT merge with failing checks
 8. **Check PR review comments** and address them before merging
 9. **Squash and merge** once CI is green and comments are addressed
-10. **Delete local branches** after merge (remote branches auto-delete)
+10. **Delete local branches** after merge (`git branch -d <branch>`; remote branches auto-delete)
 11. **Update and close the issue**
 12. **Feature docs** go in `features/<feature-name>/` (one folder per feature, multiple artifacts allowed)
 13. **After merge**, move the feature folder to `features/archive/` via a `docs:` PR
