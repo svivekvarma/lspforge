@@ -74,6 +74,8 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `refactor:` — code change that neither fixes a bug nor adds a feature
 - `test:` — adding or updating tests
 
+**Authorship**: All commits MUST be authored by `svivekvarma`. AI assistants (Claude, Copilot, etc.) must NEVER be the commit author or co-author. Do NOT add `Co-Authored-By` trailers for AI tools.
+
 ## Branch Protection
 
 - `main` requires at least one approving review (enforced via `CODEOWNERS`: `* @svivekvarma`)
