@@ -3,6 +3,7 @@ import { join, delimiter } from "node:path";
 import { mkdtemp, readFile, rm, access } from "node:fs/promises";
 import { tmpdir, platform } from "node:os";
 import { spawnSync, execFileSync } from "node:child_process";
+import { loadPackage } from "../core/registry.js";
 
 /**
  * E2E smoke test: run `lspforge install typescript-language-server`
@@ -10,8 +11,9 @@ import { spawnSync, execFileSync } from "node:child_process";
  * and Claude Code config output.
  *
  * Requires network access and takes ~30-60s on first run.
+ * Set LSPFORGE_E2E=1 to enable; skipped by default for fast unit tests.
  */
-describe("E2E: lspforge install typescript-language-server", { timeout: 120_000 }, () => {
+describe.skipIf(!process.env.LSPFORGE_E2E)("E2E: lspforge install typescript-language-server", { timeout: 120_000 }, () => {
   const isWindows = platform() === "win32";
   let fakeHome: string;
   let dataDir: string;
@@ -86,7 +88,9 @@ describe("E2E: lspforge install typescript-language-server", { timeout: 120_000 
 
     expect(server).toBeDefined();
     expect(server.source).toBe("npm");
-    expect(server.version).toBe("4.3.3");
+    // Read expected version from registry so test doesn't break on updates
+    const pkg = await loadPackage("typescript-language-server");
+    expect(server.version).toBe(pkg!.source.npm!.version ?? "latest");
     expect(server.binPath).toBeTruthy();
     expect(server.installedAt).toBeTruthy();
   });

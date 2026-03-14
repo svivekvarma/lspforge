@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { join } from "node:path";
 import { mkdtemp, readFile, writeFile, rm, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { tmpdir, homedir } from "node:os";
+import { tmpdir } from "node:os";
 import { parse as parseToml } from "smol-toml";
 import {
   configureClaudeCode,
@@ -26,8 +26,8 @@ describe("Claude Code config writer", () => {
   let pluginDir: string;
   let lspConfigPath: string;
   let manifestPath: string;
-  let originalHome: string;
-  let originalUserprofile: string;
+  let originalHome: string | undefined;
+  let originalUserprofile: string | undefined;
 
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), "lspforge-claude-test-"));
@@ -35,15 +35,15 @@ describe("Claude Code config writer", () => {
     lspConfigPath = join(pluginDir, ".lsp.json");
     manifestPath = join(pluginDir, ".claude-plugin", "plugin.json");
 
-    originalHome = process.env.HOME || homedir();
-    originalUserprofile = process.env.USERPROFILE || homedir();
+    originalHome = process.env.HOME;
+    originalUserprofile = process.env.USERPROFILE;
     process.env.HOME = tempDir;
     process.env.USERPROFILE = tempDir;
   });
 
   afterEach(async () => {
-    process.env.HOME = originalHome;
-    process.env.USERPROFILE = originalUserprofile;
+    if (originalHome === undefined) { delete process.env.HOME; } else { process.env.HOME = originalHome; }
+    if (originalUserprofile === undefined) { delete process.env.USERPROFILE; } else { process.env.USERPROFILE = originalUserprofile; }
     await rm(tempDir, { recursive: true });
   });
 
@@ -247,21 +247,21 @@ describe("Copilot CLI config writer", () => {
 describe("Codex config writer", () => {
   let tempDir: string;
   let configPath: string;
-  let originalHome: string;
-  let originalUserprofile: string;
+  let originalHome: string | undefined;
+  let originalUserprofile: string | undefined;
 
   beforeEach(async () => {
     tempDir = await mkdtemp(join(tmpdir(), "lspforge-codex-test-"));
-    originalHome = process.env.HOME || homedir();
-    originalUserprofile = process.env.USERPROFILE || homedir();
+    originalHome = process.env.HOME;
+    originalUserprofile = process.env.USERPROFILE;
     process.env.HOME = tempDir;
     process.env.USERPROFILE = tempDir;
     configPath = join(tempDir, ".codex", "config.toml");
   });
 
   afterEach(async () => {
-    process.env.HOME = originalHome;
-    process.env.USERPROFILE = originalUserprofile;
+    if (originalHome === undefined) { delete process.env.HOME; } else { process.env.HOME = originalHome; }
+    if (originalUserprofile === undefined) { delete process.env.USERPROFILE; } else { process.env.USERPROFILE = originalUserprofile; }
     await rm(tempDir, { recursive: true });
   });
 

@@ -121,6 +121,7 @@ export const initCommand = defineCommand({
           result.binPath,
           pkg.lsp.args,
           pkg.health?.timeout_ms,
+          installDir,
         );
 
         await addServer(serverName, {
