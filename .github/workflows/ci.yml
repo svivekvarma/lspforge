@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }} (Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npx vitest run
+
+      - name: CLI smoke test - help
+        run: node dist/cli.js --help
+
+      - name: CLI smoke test - doctor
+        run: node dist/cli.js doctor
+
+      - name: CLI smoke test - list available
+        run: node dist/cli.js list --available
+
+      - name: CLI smoke test - install pyright
+        run: node dist/cli.js install pyright --skip-config
+
+      - name: CLI smoke test - health check
+        run: node dist/cli.js check pyright
+
+      - name: CLI smoke test - list installed
+        run: node dist/cli.js list
+
+      - name: CLI smoke test - uninstall
+        run: node dist/cli.js uninstall pyright --skip-config
+        env:
+          # Skip client detection during uninstall in CI
+          CI: true
+
+  lint:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build (verify no errors)
+        run: npm run build

@@ -15,6 +15,11 @@ export const uninstallCommand = defineCommand({
       description: "Server name to uninstall",
       required: true,
     },
+    "skip-config": {
+      type: "boolean",
+      description: "Skip removing from AI tool configs",
+      default: false,
+    },
   },
   async run({ args }) {
     const serverName = args.server as string;
@@ -27,15 +32,17 @@ export const uninstallCommand = defineCommand({
     }
 
     // Remove from client configs
-    const clients = await detectClients();
-    for (const { name, client } of clients) {
-      try {
-        await client.unconfigure(serverName);
-        consola.success(`Removed ${serverName} from ${name}`);
-      } catch (err) {
-        consola.warn(
-          `Failed to remove from ${name}: ${err instanceof Error ? err.message : err}`,
-        );
+    if (!args["skip-config"]) {
+      const clients = await detectClients();
+      for (const { name, client } of clients) {
+        try {
+          await client.unconfigure(serverName);
+          consola.success(`Removed ${serverName} from ${name}`);
+        } catch (err) {
+          consola.warn(
+            `Failed to remove from ${name}: ${err instanceof Error ? err.message : err}`,
+          );
+        }
       }
     }
 

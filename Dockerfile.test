@@ -1,0 +1,29 @@
+FROM node:22-slim
+
+WORKDIR /app
+
+# Copy package files first for caching
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy source and registry
+COPY tsconfig.json tsup.config.ts ./
+COPY src/ src/
+COPY registry/ registry/
+
+# Build
+RUN npm run build
+
+# Run tests
+RUN npx vitest run
+
+# Smoke tests
+RUN node dist/cli.js --help
+RUN node dist/cli.js doctor
+RUN node dist/cli.js list --available
+RUN node dist/cli.js install pyright --skip-config
+RUN node dist/cli.js check pyright
+RUN node dist/cli.js list
+RUN node dist/cli.js uninstall pyright
+
+CMD ["echo", "All tests passed!"]
