@@ -218,7 +218,7 @@ Spawns the server process, sends a proper LSP `initialize` request via JSON-RPC 
 Managed entries are tagged so `lspforge uninstall` can remove them cleanly:
 - **Claude Code**: Entire `~/.claude/plugins/lspforge/` directory is managed by lspforge. Removing the last server cleans up the plugin directory.
 - **Copilot CLI**: `"_managed_by": "lspforge"` field on each `lspServers` entry in `lsp-config.json`
-- **Codex (MCP)**: `"_managed_by": "lspforge"` field on each `mcp_servers` entry in `config.toml`
+- **Codex (MCP)**: `_managed_by = "lspforge"` field on each `mcp_servers` entry in `config.toml`
 
 Deep-merge strategy: read existing config, only touch entries we manage, preserve everything else, match existing indentation.
 

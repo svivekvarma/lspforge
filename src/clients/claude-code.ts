@@ -117,7 +117,9 @@ export async function unconfigureClaudeCode(
         await rm(pluginDir, { recursive: true });
       }
     }
-  } catch {
-    // Config doesn't exist or is invalid
+  } catch (err) {
+    consola.warn(
+      `Could not unconfigure ${serverName} from Claude Code: ${err instanceof Error ? err.message : String(err)}`,
+    );
   }
 }
