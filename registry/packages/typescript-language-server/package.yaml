@@ -9,6 +9,8 @@ source:
     package: typescript-language-server
     bin: typescript-language-server
     version: "4.3.3"
+    extra_packages:
+      - typescript
 
 lsp:
   command: typescript-language-server

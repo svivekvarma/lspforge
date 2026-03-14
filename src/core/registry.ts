@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
 
 export interface PackageSource {
-  npm?: { package: string; bin: string; version?: string };
+  npm?: { package: string; bin: string; version?: string; extra_packages?: string[] };
   pip?: { package: string; bin: string; version?: string };
   cargo?: { package: string; bin: string; version?: string };
   go?: { package: string; bin: string; version?: string };

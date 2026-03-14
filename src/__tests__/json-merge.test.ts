@@ -63,6 +63,18 @@ describe("mergeJsonConfig", () => {
     }
   });
 
+  it("creates parent directories if they don't exist", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "lspforge-test-"));
+    const filePath = join(dir, "nested", "deep", "config.json");
+    try {
+      await mergeJsonConfig(filePath, { key: "value" });
+      const content = JSON.parse(await readFile(filePath, "utf-8"));
+      expect(content).toEqual({ key: "value" });
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+
   it("preserves indent style", async () => {
     const dir = await mkdtemp(join(tmpdir(), "lspforge-test-"));
     const filePath = join(dir, "config.json");

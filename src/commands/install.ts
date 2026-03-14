@@ -101,6 +101,7 @@ export const installCommand = defineCommand({
         result.binPath,
         pkg.lsp.args,
         pkg.health?.timeout_ms,
+        installDir,
       );
 
       if (health.status === "ok") {
