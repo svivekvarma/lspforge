@@ -17,6 +17,7 @@ export async function checkLspHealth(
   binPath: string,
   args: string[],
   timeoutMs: number = 10000,
+  rootDir?: string,
 ): Promise<HealthResult> {
   const start = Date.now();
 
@@ -92,8 +93,9 @@ export async function checkLspHealth(
       });
     });
 
-    // Send LSP initialize request
-    const rootUri = toFileUri(tmpdir());
+    // Send LSP initialize request — use the install directory as rootUri
+    // so the server can find co-installed packages (e.g. tsserver).
+    const rootUri = toFileUri(rootDir ?? tmpdir());
     safeSend(proc.stdin!, 1, "initialize", {
       processId: process.pid,
       capabilities: {},

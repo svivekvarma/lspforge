@@ -1,4 +1,5 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { dirname } from "node:path";
 
 /**
  * Deep merge source into target, preserving existing keys.
@@ -55,6 +56,7 @@ export async function mergeJsonConfig(
 
   const merged = deepMerge(existing, updates);
   const useTab = indent === 1;
+  await mkdir(dirname(filePath), { recursive: true });
   await writeFile(
     filePath,
     JSON.stringify(merged, null, useTab ? "\t" : indent) + "\n",

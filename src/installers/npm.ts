@@ -15,11 +15,13 @@ export async function installNpm(
   const version = source.version ? `@${source.version}` : "";
   const packageSpec = `${source.package}${version}`;
 
+  const packages = [packageSpec, ...(source.extra_packages ?? [])];
+
   const result = await exec("npm", [
     "install",
     "--prefix",
     installDir,
-    packageSpec,
+    ...packages,
   ]);
 
   if (result.code !== 0) {
