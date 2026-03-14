@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { join, delimiter } from "node:path";
 import { mkdtemp, readFile, rm, access } from "node:fs/promises";
 import { tmpdir, platform } from "node:os";
-import { spawnSync, execFileSync } from "node:child_process";
+import { spawnSync, execSync, execFileSync } from "node:child_process";
 import { loadPackage } from "../core/registry.js";
 
 /**
@@ -40,6 +40,19 @@ function requireRuntime(...checks: (string | [string, ...string[]])[]): void {
     `Details: [${errors.join("; ")}]. ` +
     `Ensure it is installed and on PATH in CI.`,
   );
+}
+
+/**
+ * Force-remove a directory tree, handling read-only files (e.g. Go module cache).
+ * Go sets module cache files to 444/r--r--r--, which causes EACCES on rm.
+ */
+async function forceRemove(dir: string): Promise<void> {
+  if (!dir) return;
+  if (!isWindows) {
+    // chmod -R u+rwX first to make everything deletable
+    try { execSync(`chmod -R u+rwX ${JSON.stringify(dir)}`, { stdio: "pipe" }); } catch { /* ignore */ }
+  }
+  await rm(dir, { recursive: true, force: true });
 }
 
 /** Resolve data dir per platform. */
@@ -105,7 +118,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: npm installer (typescript-language-server)",
   });
 
   afterAll(async () => {
-    if (fakeHome) await rm(fakeHome, { recursive: true, force: true });
+    await forceRemove(fakeHome);
   });
 
   it("installs and exits cleanly", () => {
@@ -183,7 +196,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: pip installer (python-lsp-server)", { timeou
   });
 
   afterAll(async () => {
-    if (fakeHome) await rm(fakeHome, { recursive: true, force: true });
+    await forceRemove(fakeHome);
   });
 
   it("installs python-lsp-server via pip and exits cleanly", () => {
@@ -228,7 +241,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: go installer (gopls)", { timeout: 180_000 },
   });
 
   afterAll(async () => {
-    if (fakeHome) await rm(fakeHome, { recursive: true, force: true });
+    await forceRemove(fakeHome);
   });
 
   it("installs gopls via go and exits cleanly", () => {
@@ -273,7 +286,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: cargo installer (taplo)", { timeout: 300_000
   });
 
   afterAll(async () => {
-    if (fakeHome) await rm(fakeHome, { recursive: true, force: true });
+    await forceRemove(fakeHome);
   });
 
   it("installs taplo via cargo and exits cleanly", () => {
@@ -315,7 +328,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: binary installer (rust-analyzer)", { timeout
   });
 
   afterAll(async () => {
-    if (fakeHome) await rm(fakeHome, { recursive: true, force: true });
+    await forceRemove(fakeHome);
   });
 
   it("installs rust-analyzer via binary download and exits cleanly", () => {
