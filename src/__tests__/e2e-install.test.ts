@@ -17,22 +17,28 @@ import { loadPackage } from "../core/registry.js";
 const E2E_ENABLED = process.env.LSPFORGE_E2E === "1";
 const isWindows = platform() === "win32";
 
-/** Check that a runtime command is available on PATH. Tries multiple aliases. */
-function requireRuntime(...cmds: string[]): void {
+/**
+ * Check that a runtime command is available on PATH.
+ * Each entry is [command, ...args] to handle tools with non-standard
+ * version flags (e.g. `go version` instead of `go --version`).
+ */
+function requireRuntime(...checks: (string | [string, ...string[]])[]): void {
   const errors: string[] = [];
-  for (const cmd of cmds) {
-    const result = spawnSync(cmd, ["--version"], {
+  for (const check of checks) {
+    const [cmd, ...args] = Array.isArray(check) ? check : [check, "--version"];
+    const result = spawnSync(cmd, args, {
       encoding: "utf-8",
       timeout: 10_000,
       shell: true,
       stdio: "pipe",
     });
     if (!result.error && result.status === 0) return;
-    errors.push(`${cmd}: status=${result.status} error=${result.error?.message ?? "none"} stderr=${(result.stderr ?? "").trim()}`);
+    errors.push(`${cmd}: status=${result.status} error=${result.error?.message ?? "none"}`);
   }
   throw new Error(
-    `Required runtime not found: ${cmds.join(" or ")}. Details: [${errors.join("; ")}]. ` +
-    `Ensure it is installed and on PATH in CI (setup-python, setup-go, etc.).`,
+    `Required runtime not found: ${checks.map((c) => Array.isArray(c) ? c[0] : c).join(" or ")}. ` +
+    `Details: [${errors.join("; ")}]. ` +
+    `Ensure it is installed and on PATH in CI.`,
   );
 }
 
@@ -213,7 +219,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: go installer (gopls)", { timeout: 180_000 },
   let env: NodeJS.ProcessEnv;
 
   beforeAll(async () => {
-    requireRuntime("go");
+    requireRuntime(["go", "version"]);
 
     fakeHome = await mkdtemp(join(tmpdir(), "lspforge-e2e-go-"));
     dataDir = getDataDir(fakeHome);
