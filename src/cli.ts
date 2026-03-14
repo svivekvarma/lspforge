@@ -1,4 +1,5 @@
 import { defineCommand, runMain } from "citty";
+import { createRequire } from "node:module";
 import { installCommand } from "./commands/install.js";
 import { uninstallCommand } from "./commands/uninstall.js";
 import { listCommand } from "./commands/list.js";
@@ -6,10 +7,13 @@ import { checkCommand } from "./commands/check.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { initCommand } from "./commands/init.js";
 
+const require = createRequire(import.meta.url);
+const { version } = require("../package.json") as { version: string };
+
 const main = defineCommand({
   meta: {
     name: "lspforge",
-    version: "0.2.0",
+    version,
     description:
       "Mason.nvim-style LSP server manager for AI coding tools",
   },
