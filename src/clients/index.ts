@@ -7,6 +7,7 @@ export interface ClientConfig {
   serverName: string;
   binPath: string;
   args: string[];
+  extensionToLanguage: Record<string, string>;
 }
 
 export interface Client {

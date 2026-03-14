@@ -22,6 +22,7 @@ export interface PackageLsp {
   command: string;
   args: string[];
   file_patterns: string[];
+  extension_to_language: Record<string, string>;
 }
 
 export interface PackagePlatformOverride {

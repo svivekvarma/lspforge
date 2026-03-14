@@ -6,19 +6,23 @@
 
 ## Target Clients
 
-### MVP (Phase 1)
-| Client | Config File | Format |
-|--------|------------|--------|
-| Claude Code | `claude mcp add` CLI | JSON (`mcpServers`) |
-| GitHub Copilot CLI | `~/.copilot/mcp-config.json` | JSON (`mcpServers`) |
-| OpenAI Codex | `~/.codex/config.toml` | TOML (`[mcp_servers.<name>]`) |
+### MVP (Phase 1) — Native LSP Config
+| Client | Config File | Format | Integration |
+|--------|------------|--------|-------------|
+| Claude Code | `~/.claude/plugins/lspforge/.lsp.json` | JSON (LSP plugin) | Native LSP |
+| GitHub Copilot CLI | `~/.copilot/lsp-config.json` | JSON (`lspServers`) | Native LSP |
+| OpenAI Codex | `~/.codex/config.toml` | TOML (`[mcp_servers.<name>]`) | MCP (no LSP support) |
 
 ### Phase 2
-| Client | Config File | Format |
-|--------|------------|--------|
-| Gemini CLI | `~/.gemini/settings.json` | JSON (`mcpServers`) |
-| VS Code Copilot | `.vscode/mcp.json` | JSON (`servers`) |
-| Claude Desktop | `claude_desktop_config.json` | JSON (`mcpServers`) |
+| Client | Config File | Format | Integration |
+|--------|------------|--------|-------------|
+| Gemini CLI | TBD | TBD | MCP (no LSP support yet) |
+| VS Code Copilot | `.vscode/mcp.json` | JSON (`servers`) | MCP |
+| Claude Desktop | `claude_desktop_config.json` | JSON (`mcpServers`) | MCP |
+
+### Strategy
+- **Native LSP** where the client supports it (Claude Code, Copilot CLI) — gives real code intelligence (diagnostics, go-to-definition, find-references)
+- **MCP fallback** for clients without LSP support (Codex, Gemini CLI) — wraps LSP as MCP server
 
 ## CLI Commands
 
@@ -51,9 +55,9 @@ src/
     binary.ts               # GitHub release download + extract + chmod
   clients/
     index.ts                # Client interface + auto-detection
-    claude-code.ts          # Shells out to `claude mcp add`
-    copilot-cli.ts          # Deep-merges ~/.copilot/mcp-config.json
-    codex.ts                # Appends to ~/.codex/config.toml
+    claude-code.ts          # Writes ~/.claude/plugins/lspforge/.lsp.json (native LSP plugin)
+    copilot-cli.ts          # Deep-merges ~/.copilot/lsp-config.json (native LSP config)
+    codex.ts                # Appends to ~/.codex/config.toml (MCP — no LSP support)
   health/
     lsp-check.ts            # Spawn server, send LSP initialize, validate response
   detect/
@@ -76,7 +80,7 @@ User runs: lspforge install pyright
 4. Install             → npm install --prefix ~/.lspforge/servers/pyright pyright@1.1.408
 5. Verify binary       → Check node_modules/.bin/pyright-langserver exists
 6. Health check        → Spawn server, send LSP initialize, expect capabilities
-7. Config generate     → Detect Claude Code installed → claude mcp add ...
+7. Config generate     → Detect Claude Code installed → write .lsp.json plugin
 8. State update        → Write to ~/.lspforge/state.json
 ```
 
@@ -103,6 +107,9 @@ lsp:
   command: pyright-langserver
   args: ["--stdio"]
   file_patterns: ["**/*.py", "**/*.pyi"]
+  extension_to_language:
+    ".py": python
+    ".pyi": python
 
 platforms:
   win32:
@@ -136,6 +143,8 @@ lsp:
   command: rust-analyzer
   args: []
   file_patterns: ["**/*.rs", "**/Cargo.toml"]
+  extension_to_language:
+    ".rs": rust
 
 health:
   timeout_ms: 15000
@@ -207,9 +216,9 @@ Spawns the server process, sends a proper LSP `initialize` request via JSON-RPC 
 ## Config Ownership
 
 Managed entries are tagged so `lspforge uninstall` can remove them cleanly:
-- **JSON configs**: `"_managed_by": "lspforge"` field on each server entry
-- **TOML configs**: `# managed by lspforge` comment above each section
-- **Claude Code**: Uses `claude mcp remove` CLI command
+- **Claude Code**: Entire `~/.claude/plugins/lspforge/` directory is managed by lspforge. Removing the last server cleans up the plugin directory.
+- **Copilot CLI**: `"_managed_by": "lspforge"` field on each `lspServers` entry in `lsp-config.json`
+- **Codex (MCP)**: `_managed_by = "lspforge"` field on each `mcp_servers` entry in `config.toml`
 
 Deep-merge strategy: read existing config, only touch entries we manage, preserve everything else, match existing indentation.
 

@@ -9,7 +9,7 @@ A **mason.nvim-style package manager for AI coding tools** — a CLI that instal
 AI coding tools (Claude Code, Copilot CLI, Cursor, Windsurf) need LSP and MCP servers to provide code intelligence — go-to-definition, find-references, diagnostics, hover info. But installing these servers is a fragmented, error-prone, platform-specific nightmare:
 
 1. **LSP servers are scattered** — `typescript-language-server` is on npm, `pyright` on pip/npm, `rust-analyzer` is a GitHub release binary, `gopls` needs `go install`. Each has different install steps on each OS.
-2. **Config is manual JSON editing** — Each AI tool stores config differently (`claude_desktop_config.json`, `.vscode/mcp.json`, `~/.cursor/mcp.json`). Users copy-paste JSON snippets and pray.
+2. **Config is manual JSON editing** — Each AI tool stores LSP config differently (Claude Code uses `.lsp.json` plugins, Copilot CLI uses `~/.copilot/lsp-config.json`, others use MCP). Users copy-paste JSON snippets and pray.
 3. **Windows is broken** — `child_process.spawn()` can't execute npm `.cmd` wrappers (ENOENT), file URIs are malformed (`file://C:\` vs `file:///C:/`), line endings crash strict JSON-RPC servers, lock files block onboarding.
 4. **Silent failures** — Servers fail to start with zero feedback. Config settings are silently ignored. Results are silently dropped.
 5. **No unified tool owns this** — Smithery is a web marketplace for MCP discovery. mcpman is new and focused on MCP config. copilot-mcp is a VS Code extension. cclsp bridges LSP↔MCP but doesn't install servers. Nobody handles the full pipeline: detect OS → install binary → wire config → health check.
@@ -34,7 +34,7 @@ An npm package (CLI tool) that:
 
 1. **Detects your environment** — Which AI tools are installed? What OS/platform? What languages does your project use?
 2. **Installs LSP server binaries** — Downloads/installs the right server for each language using the right package manager (npm, pip, cargo, go, binary download), sandboxed to avoid system pollution.
-3. **Generates config** — Writes the correct JSON config for each detected AI tool (Claude Code, Copilot, Cursor, Windsurf, VS Code).
+3. **Generates config** — Writes the correct native LSP config for each detected AI tool (Claude Code `.lsp.json` plugin, Copilot CLI `lsp-config.json`), falling back to MCP config for tools without LSP support (Codex, Gemini CLI).
 4. **Handles platform quirks** — Windows `.cmd` wrapper workarounds, correct file URI formats, proper line endings.
 5. **Health checks** — Verifies servers start, respond to `initialize`, and are actually functional.
 6. **Declarative config** — A single `lspconfig.yaml` (or similar) where users list desired servers; the tool ensures they're installed and configured.
