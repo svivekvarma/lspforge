@@ -6,6 +6,7 @@ import { listCommand } from "./commands/list.js";
 import { checkCommand } from "./commands/check.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { initCommand } from "./commands/init.js";
+import { updateCommand } from "./commands/update.js";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json") as { version: string };
@@ -21,6 +22,7 @@ const main = defineCommand({
     init: initCommand,
     install: installCommand,
     uninstall: uninstallCommand,
+    update: updateCommand,
     list: listCommand,
     check: checkCommand,
     doctor: doctorCommand,
