@@ -6,7 +6,7 @@ import { listPackages, loadAllPackages } from "../core/registry.js";
 export const listCommand = defineCommand({
   meta: {
     name: "list",
-    description: "List installed LSP servers",
+    description: "List installed LSP servers (use --available to browse registry)",
   },
   args: {
     available: {
@@ -81,7 +81,7 @@ export const listCommand = defineCommand({
     const servers = Object.entries(state.servers);
 
     if (servers.length === 0) {
-      consola.info("No servers installed. Run 'lspforge install <server>' to get started.");
+      consola.info("No servers installed. Run 'lspforge list --available' to browse servers, or 'lspforge init' to auto-detect.");
       return;
     }
 
