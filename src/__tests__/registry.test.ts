@@ -182,13 +182,13 @@ describe("registry", () => {
     expect(pkg!.languages).toEqual(expect.arrayContaining(["c", "cpp"]));
   });
 
-  it("loads omnisharp with npm source for C#", async () => {
+  it("loads omnisharp with github_release source for C#", async () => {
     const pkg = await loadPackage("omnisharp");
     expect(pkg).not.toBeNull();
     expect(pkg!.name).toBe("omnisharp");
     expect(pkg!.languages).toContain("csharp");
-    expect(pkg!.source.npm).toBeDefined();
-    expect(pkg!.source.npm!.package).toBe("omnisharp");
+    expect(pkg!.source.github_release).toBeDefined();
+    expect(pkg!.source.github_release!.repo).toBe("OmniSharp/omnisharp-roslyn");
     expect(pkg!.lsp.command).toBe("omnisharp");
     expect(pkg!.lsp.args).toContain("--languageserver");
   });
@@ -228,7 +228,7 @@ describe("registry", () => {
   // --- platform overrides ---
 
   it("has win32 spawn_shell override where needed", async () => {
-    const npmServers = ["typescript-language-server", "eslint-lsp", "pyright", "yaml-language-server", "bash-language-server", "css-lsp", "html-lsp", "taplo", "omnisharp"];
+    const npmServers = ["typescript-language-server", "eslint-lsp", "pyright", "yaml-language-server", "bash-language-server", "css-lsp", "html-lsp", "taplo"];
     for (const name of npmServers) {
       const pkg = await loadPackage(name);
       expect(pkg).not.toBeNull();
