@@ -8,6 +8,8 @@ on:
       - "docs/**"
       - "features/**"
       - "LICENSE"
+      - "package.json"
+      - "package-lock.json"
 
 jobs:
   test:
