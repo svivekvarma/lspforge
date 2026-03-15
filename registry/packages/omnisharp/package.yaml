@@ -10,12 +10,12 @@ source:
     assets:
       linux_x64: omnisharp-linux-x64.tar.gz
       darwin_x64: omnisharp-osx.tar.gz
-      darwin_arm64: omnisharp-osx-arm64.tar.gz
+      darwin_arm64: omnisharp-osx-arm64-net6.0.tar.gz
       win_x64: omnisharp-win-x64.zip
     checksums:
       linux_x64: "2973686feba704dbde0a3819f1d9cc9b83efc5d40c67126024fb5db323dc55b3"
       darwin_x64: "2b87b1f3e67f58590ef8c6c465428d0f41fdbfe750ea98147547754086a76f74"
-      darwin_arm64: "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
+      darwin_arm64: "36e6ba5677baf7cb7045aa51b004f436ccf98ec81ffbf2c4d6b1062755e23b49"
       win_x64: "e1ad559974430c9aa81819f1433583b0ee9a977d2daae1de32d4d408503b2867"
     bin: omnisharp
     extract: gzip
