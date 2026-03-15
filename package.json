@@ -1,6 +1,6 @@
 {
   "name": "lspforge",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "LSP server manager for AI coding tools",
   "type": "module",
   "bin": {
