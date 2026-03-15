@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { join, delimiter } from "node:path";
-import { mkdtemp, readFile, rm, access } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, rm, access } from "node:fs/promises";
 import { tmpdir, platform } from "node:os";
 import { spawnSync, execSync, execFileSync } from "node:child_process";
 import { loadPackage } from "../core/registry.js";
@@ -309,6 +309,111 @@ describe.skipIf(!E2E_ENABLED)("E2E: cargo installer (taplo)", { timeout: 300_000
     const binPath = state.servers["taplo"].binPath;
     await expect(access(binPath)).resolves.toBeUndefined();
     expect(binPath.startsWith(join(dataDir, "servers"))).toBe(true);
+  });
+});
+
+// ─── update: typescript-language-server ────────────────────────────────────────
+
+describe.skipIf(!E2E_ENABLED)("E2E: update command (typescript-language-server)", { timeout: 300_000 }, () => {
+  let fakeHome: string;
+  let dataDir: string;
+  let cliPath: string;
+  let env: NodeJS.ProcessEnv;
+  let registryVersion: string;
+
+  beforeAll(async () => {
+    requireRuntime("npm");
+
+    fakeHome = await mkdtemp(join(tmpdir(), "lspforge-e2e-update-"));
+    dataDir = getDataDir(fakeHome);
+    cliPath = join(process.cwd(), "dist", "cli.js");
+    env = getCliEnv(fakeHome, join(process.cwd(), "node_modules", ".bin"));
+
+    const pkg = await loadPackage("typescript-language-server");
+    registryVersion = pkg!.source.npm!.version ?? "latest";
+
+    // Install the server at the current registry version
+    const { code } = runCli(cliPath, env, 90_000, "install", "typescript-language-server");
+    expect(code).toBe(0);
+  });
+
+  afterAll(async () => {
+    await forceRemove(fakeHome);
+  });
+
+  it("reports up-to-date when version matches registry", () => {
+    const { output, code } = runCli(cliPath, env, 90_000, "update", "typescript-language-server");
+    expect(code).toBe(0);
+    expect(output).toContain("up to date");
+  });
+
+  it("--check reports up-to-date without modifying state", async () => {
+    const statePath = join(dataDir, "state.json");
+    const stateBefore = await readFile(statePath, "utf-8");
+
+    const { code } = runCli(cliPath, env, 90_000, "update", "--check");
+    expect(code).toBe(0);
+
+    const stateAfter = await readFile(statePath, "utf-8");
+    expect(stateAfter).toBe(stateBefore);
+  });
+
+  it("updates when state.json records an older version", async () => {
+    // Fake an older version in state.json to simulate an outdated install
+    const statePath = join(dataDir, "state.json");
+    const state = JSON.parse(await readFile(statePath, "utf-8"));
+    const originalTimestamp = state.servers["typescript-language-server"].installedAt;
+    state.servers["typescript-language-server"].version = "0.0.1";
+    await writeFile(statePath, JSON.stringify(state, null, 2) + "\n", "utf-8");
+
+    // --check should report an available update
+    const checkResult = runCli(cliPath, env, 90_000, "update", "--check");
+    expect(checkResult.code).toBe(0);
+    expect(checkResult.output).toContain("0.0.1");
+    expect(checkResult.output).toContain(registryVersion);
+
+    // Verify --check did NOT change state
+    const stateAfterCheck = JSON.parse(await readFile(statePath, "utf-8"));
+    expect(stateAfterCheck.servers["typescript-language-server"].version).toBe("0.0.1");
+
+    // Now actually update
+    const { output, code } = runCli(cliPath, env, 90_000, "update", "typescript-language-server");
+    expect(code).toBe(0);
+    expect(output).toMatch(/Updating.*0\.0\.1.*to/i);
+
+    // Verify state was updated
+    const stateAfterUpdate = JSON.parse(await readFile(statePath, "utf-8"));
+    const server = stateAfterUpdate.servers["typescript-language-server"];
+    expect(server.version).toBe(registryVersion);
+    expect(server.source).toBe("npm");
+    expect(server.healthStatus).toBe("ok");
+    expect(server.binPath).toBeTruthy();
+    // installedAt should be refreshed
+    expect(server.installedAt).not.toBe(originalTimestamp);
+  });
+
+  it("--force reinstalls even when already up-to-date", () => {
+    const { output, code } = runCli(cliPath, env, 90_000, "update", "typescript-language-server", "--force");
+    expect(code).toBe(0);
+    expect(output).toMatch(/Updating|Installed/i);
+  });
+
+  it("preserves state.json fields after force update", async () => {
+    const statePath = join(dataDir, "state.json");
+    const state = JSON.parse(await readFile(statePath, "utf-8"));
+    const server = state.servers["typescript-language-server"];
+
+    expect(server).toBeDefined();
+    expect(server.version).toBe(registryVersion);
+    expect(server.source).toBe("npm");
+    expect(server.binPath).toBeTruthy();
+    expect(server.healthStatus).toBe("ok");
+  });
+
+  it("errors when server is not installed", () => {
+    const { output, code } = runCli(cliPath, env, 30_000, "update", "nonexistent-server");
+    expect(code).toBe(1);
+    expect(output).toContain("not installed");
   });
 });
 
