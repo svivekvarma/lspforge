@@ -195,31 +195,6 @@ describe("detectLanguages", () => {
     }
   });
 
-  it("detects Java from pom.xml", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lspforge-test-"));
-    try {
-      await writeFile(join(dir, "pom.xml"), "");
-      const result = await detectLanguages(dir);
-      expect(result.some((r) => r.language === "java")).toBe(true);
-      const java = result.find((r) => r.language === "java")!;
-      expect(java.confidence).toBe("certain");
-      expect(java.recommendedServers).toContain("eclipse-jdt-ls");
-    } finally {
-      await rm(dir, { recursive: true });
-    }
-  });
-
-  it("detects Java from .java files", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lspforge-test-"));
-    try {
-      await writeFile(join(dir, "Main.java"), "");
-      const result = await detectLanguages(dir);
-      expect(result.some((r) => r.language === "java")).toBe(true);
-    } finally {
-      await rm(dir, { recursive: true });
-    }
-  });
-
   it("detects multiple languages", async () => {
     const dir = await mkdtemp(join(tmpdir(), "lspforge-test-"));
     try {

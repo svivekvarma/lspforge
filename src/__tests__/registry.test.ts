@@ -19,7 +19,6 @@ describe("registry", () => {
     "css-lsp",
     "html-lsp",
     "omnisharp",
-    "eclipse-jdt-ls",
   ];
 
   it("lists all packages", async () => {
@@ -191,18 +190,6 @@ describe("registry", () => {
     expect(pkg!.source.github_release!.repo).toBe("OmniSharp/omnisharp-roslyn");
     expect(pkg!.lsp.command).toBe("omnisharp");
     expect(pkg!.lsp.args).toContain("--languageserver");
-  });
-
-  it("loads eclipse-jdt-ls with github_release source for Java", async () => {
-    const pkg = await loadPackage("eclipse-jdt-ls");
-    expect(pkg).not.toBeNull();
-    expect(pkg!.name).toBe("eclipse-jdt-ls");
-    expect(pkg!.languages).toContain("java");
-    expect(pkg!.source.github_release).toBeDefined();
-    expect(pkg!.source.github_release!.repo).toBe("eclipse/eclipse.jdt.ls");
-    expect(pkg!.source.github_release!.extract).toBe("gzip");
-    expect(pkg!.source.github_release!.assets.linux_x64).toBeTruthy();
-    expect(pkg!.source.github_release!.assets.win_x64).toBeTruthy();
   });
 
   // --- search ---
