@@ -24,6 +24,7 @@ AI coding tools (Claude Code, Copilot CLI, Cursor, Windsurf) need LSP and MCP se
 | **cclsp** | Bridges LSP↔MCP for Claude Code | Doesn't install LSP servers, user must install them manually |
 | **Piebald-AI/claude-code-lsps** | Plugin marketplace for Claude Code | Claude Code only, doesn't install server binaries |
 | **install-mcp** | CLI for MCP installation | MCP only, no LSP |
+
 **The gap**: No tool handles the full pipeline (install the actual server binary, handle platform differences, sandbox the install) for AI coding tools.
 
 ## The Solution

@@ -2,7 +2,6 @@
 
 **The missing package manager for LSP servers in AI coding tools.**
 
-
 [![npm version](https://img.shields.io/npm/v/lspforge)](https://www.npmjs.com/package/lspforge)
 [![license](https://img.shields.io/npm/l/lspforge)](https://github.com/svivekvarma/lspforge/blob/main/LICENSE)
 
