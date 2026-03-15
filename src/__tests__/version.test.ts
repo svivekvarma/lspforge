@@ -45,6 +45,12 @@ describe("compareVersions", () => {
     expect(compareVersions("1.0.0-alpha", "1.0.0-beta")).toBe(-1);
     expect(compareVersions("1.0.0-beta", "1.0.0-alpha")).toBe(1);
   });
+
+  it("handles zero-padded numeric segments", () => {
+    expect(compareVersions("2025-03-10", "2025-3-10")).toBe(0);
+    expect(compareVersions("01", "1")).toBe(0);
+    expect(compareVersions("03", "2")).toBe(1);
+  });
 });
 
 describe("isNewer", () => {

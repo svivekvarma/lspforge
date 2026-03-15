@@ -1,8 +1,8 @@
 import { defineCommand } from "citty";
 import consola from "consola";
-import { loadPackage, listPackages } from "../core/registry.js";
+import { loadPackage } from "../core/registry.js";
 import { detectPlatform, detectRuntimes } from "../core/platform.js";
-import { getServerDir, ensureDataDirs } from "../core/paths.js";
+import { ensureDataDirs } from "../core/paths.js";
 import { addServer, getServer, loadState } from "../core/state.js";
 import { selectInstaller } from "../installers/index.js";
 import { detectClients } from "../clients/index.js";
@@ -13,26 +13,15 @@ import type { ServerState } from "../core/state.js";
 
 /**
  * Extract the registry version from a package definition for a given source type.
- * Falls back to checking all source types if sourceType is not specified.
  */
-function getRegistryVersion(pkg: PackageDefinition, sourceType?: string): string | null {
-  if (sourceType) {
-    if (sourceType === "binary" && pkg.source.github_release) {
-      return pkg.source.github_release.tag;
-    }
-    const src = pkg.source[sourceType as keyof typeof pkg.source] as
-      | { version?: string }
-      | undefined;
-    return src?.version ?? null;
+function getRegistryVersion(pkg: PackageDefinition, sourceType: string): string | null {
+  if (sourceType === "binary" && pkg.source.github_release) {
+    return pkg.source.github_release.tag;
   }
-
-  // Check all sources in priority order
-  if (pkg.source.npm?.version) return pkg.source.npm.version;
-  if (pkg.source.pip?.version) return pkg.source.pip.version;
-  if (pkg.source.cargo?.version) return pkg.source.cargo.version;
-  if (pkg.source.go?.version) return pkg.source.go.version;
-  if (pkg.source.github_release?.tag) return pkg.source.github_release.tag;
-  return null;
+  const src = pkg.source[sourceType as keyof typeof pkg.source] as
+    | { version?: string }
+    | undefined;
+  return src?.version ?? null;
 }
 
 interface UpdateResult {
@@ -87,15 +76,19 @@ async function updateServer(
   const platformInfo = detectPlatform();
   const runtimes = await detectRuntimes();
 
+  // Select the same installer type that was originally used
   const selected = selectInstaller(pkg.source, runtimes);
-  if (!selected) {
-    return { name: serverName, status: "error", error: "no compatible installer available" };
+  if (!selected || selected.type !== server.source) {
+    const reason = !selected
+      ? "no compatible installer available"
+      : `original installer (${server.source}) is no longer available, found ${selected.type} instead`;
+    return { name: serverName, status: "error", error: reason };
   }
 
-  // Install (overwrite in-place)
+  // Install in-place using the stored install path
+  const installDir = server.installPath;
   consola.start(`Updating ${serverName} from v${server.version} to v${registryVersion} via ${selected.type}...`);
   await ensureDataDirs();
-  const installDir = getServerDir(serverName);
 
   let result;
   try {
@@ -126,8 +119,7 @@ async function updateServer(
     consola.warn(`Health check ${health.status}: ${health.error}`);
   }
 
-  // Update state (preserves client configs — no unconfigure/reconfigure needed
-  // unless binPath changed)
+  // Update state
   await addServer(serverName, {
     version: result.version,
     source: result.source,
@@ -224,10 +216,10 @@ export const updateCommand = defineCommand({
     }
 
     // Summary
+    const errors = results.filter((r) => r.status === "error");
+
     if (check) {
       const updates = results.filter((r) => r.status === "updated");
-      const errors = results.filter((r) => r.status === "error");
-
       if (updates.length > 0) {
         consola.log("");
         consola.info("Available updates:");
@@ -239,14 +231,9 @@ export const updateCommand = defineCommand({
       } else if (errors.length === 0) {
         consola.success("All servers are up to date");
       }
-
-      for (const r of errors) {
-        consola.error(`${r.name}: ${r.error}`);
-      }
     } else {
       const updated = results.filter((r) => r.status === "updated");
       const upToDate = results.filter((r) => r.status === "up-to-date");
-      const errors = results.filter((r) => r.status === "error");
 
       if (updated.length > 0) {
         consola.log("");
@@ -260,14 +247,13 @@ export const updateCommand = defineCommand({
           consola.info(`${r.name} is already up to date (v${r.fromVersion})`);
         }
       }
+    }
 
+    if (errors.length > 0) {
       for (const r of errors) {
         consola.error(`${r.name}: ${r.error}`);
       }
-
-      if (errors.length > 0) {
-        process.exitCode = 1;
-      }
+      process.exitCode = 1;
     }
   },
 });

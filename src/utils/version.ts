@@ -17,11 +17,11 @@ export function compareVersions(a: string, b: string): -1 | 0 | 1 {
   for (let i = 0; i < len; i++) {
     const rawA = partsA[i] ?? "0";
     const rawB = partsB[i] ?? "0";
-    const numA = parseInt(rawA, 10);
-    const numB = parseInt(rawB, 10);
 
-    // Both purely numeric — compare as numbers
-    if (!isNaN(numA) && !isNaN(numB) && String(numA) === rawA && String(numB) === rawB) {
+    // Both purely numeric (including zero-padded like "03") — compare as numbers
+    if (/^\d+$/.test(rawA) && /^\d+$/.test(rawB)) {
+      const numA = parseInt(rawA, 10);
+      const numB = parseInt(rawB, 10);
       if (numA < numB) return -1;
       if (numA > numB) return 1;
       continue;
