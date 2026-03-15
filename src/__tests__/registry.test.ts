@@ -18,6 +18,8 @@ describe("registry", () => {
     "templ",
     "css-lsp",
     "html-lsp",
+    "omnisharp",
+    "eclipse-jdt-ls",
   ];
 
   it("lists all packages", async () => {
@@ -180,6 +182,29 @@ describe("registry", () => {
     expect(pkg!.languages).toEqual(expect.arrayContaining(["c", "cpp"]));
   });
 
+  it("loads omnisharp with npm source for C#", async () => {
+    const pkg = await loadPackage("omnisharp");
+    expect(pkg).not.toBeNull();
+    expect(pkg!.name).toBe("omnisharp");
+    expect(pkg!.languages).toContain("csharp");
+    expect(pkg!.source.npm).toBeDefined();
+    expect(pkg!.source.npm!.package).toBe("omnisharp");
+    expect(pkg!.lsp.command).toBe("omnisharp");
+    expect(pkg!.lsp.args).toContain("--languageserver");
+  });
+
+  it("loads eclipse-jdt-ls with github_release source for Java", async () => {
+    const pkg = await loadPackage("eclipse-jdt-ls");
+    expect(pkg).not.toBeNull();
+    expect(pkg!.name).toBe("eclipse-jdt-ls");
+    expect(pkg!.languages).toContain("java");
+    expect(pkg!.source.github_release).toBeDefined();
+    expect(pkg!.source.github_release!.repo).toBe("eclipse/eclipse.jdt.ls");
+    expect(pkg!.source.github_release!.extract).toBe("gzip");
+    expect(pkg!.source.github_release!.assets.linux_x64).toBeTruthy();
+    expect(pkg!.source.github_release!.assets.win_x64).toBeTruthy();
+  });
+
   // --- search ---
 
   it("searches by language", async () => {
@@ -203,7 +228,7 @@ describe("registry", () => {
   // --- platform overrides ---
 
   it("has win32 spawn_shell override where needed", async () => {
-    const npmServers = ["typescript-language-server", "eslint-lsp", "pyright", "yaml-language-server", "bash-language-server", "css-lsp", "html-lsp", "taplo"];
+    const npmServers = ["typescript-language-server", "eslint-lsp", "pyright", "yaml-language-server", "bash-language-server", "css-lsp", "html-lsp", "taplo", "omnisharp"];
     for (const name of npmServers) {
       const pkg = await loadPackage(name);
       expect(pkg).not.toBeNull();
