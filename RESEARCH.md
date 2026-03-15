@@ -52,7 +52,6 @@
 
 | Tool | Type | Strengths | Weaknesses |
 |------|------|-----------|------------|
-| **mason.nvim** | Neovim plugin | Gold standard, 400+ packages, cross-platform | Neovim only |
 | **cclsp** | npm MCP server | Bridges LSP↔MCP, setup wizard | Doesn't install LSP binaries |
 | **Piebald-AI/claude-code-lsps** | Plugin marketplace | 22+ languages, 298 stars | Claude Code only, no binary install |
 | **zircote/lsp-marketplace** | Plugin marketplace | 28 LSP plugins | Claude Code only, no binary install |
@@ -67,17 +66,8 @@ Every existing tool falls into one of two categories:
 
 ---
 
-### mason.nvim — The Model to Follow
+### Key Lessons from Existing Tools
 
-**What makes it successful (8,000+ stars):**
-1. Community-maintained registry with installation metadata per package per platform
-2. Sandboxed installs in `~/.local/share/nvim/mason/` — no system pollution
-3. Cross-platform binary resolution (Windows .cmd wrappers, Linux bins, macOS)
-4. Declarative config: list what you want, mason ensures it's installed
-5. TUI inside Neovim for browsing/installing/updating
-6. Companion plugins bridge mason ↔ Neovim LSP client
-
-**What we can learn:**
 - The registry is the moat — quality metadata about how to install each server on each platform
 - Sandboxing is essential — users won't trust a tool that installs globally
 - Declarative config enables team sharing — commit a file, teammates run one command
@@ -142,4 +132,4 @@ The total addressable market is every developer using AI coding tools who needs 
 
 **Verdict: Strong opportunity with clear differentiation.**
 
-The pain is well-documented (dozens of GitHub issues), the gap is real (no mason.nvim equivalent exists), and the timing is right (MCP/LSP adoption in AI tools is exploding but tooling hasn't caught up).
+The pain is well-documented (dozens of GitHub issues), the gap is real (no cross-client LSP server manager exists), and the timing is right (MCP/LSP adoption in AI tools is exploding but tooling hasn't caught up).
