@@ -1,0 +1,27 @@
+name: html-lsp
+description: Language server for HTML
+languages:
+  - html
+
+source:
+  npm:
+    package: vscode-langservers-extracted
+    bin: vscode-html-language-server
+    version: "4.10.0"
+
+lsp:
+  command: vscode-html-language-server
+  args: ["--stdio"]
+  file_patterns:
+    - "**/*.html"
+    - "**/*.htm"
+  extension_to_language:
+    ".html": html
+    ".htm": html
+
+platforms:
+  win32:
+    spawn_shell: true
+
+health:
+  timeout_ms: 10000

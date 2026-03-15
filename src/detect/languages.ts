@@ -35,12 +35,24 @@ const EXTENSION_INDICATORS: Record<string, string> = {
   ".kt": "kotlin",
   ".scala": "scala",
   ".zig": "zig",
+  ".lua": "lua",
+  ".yaml": "yaml",
+  ".yml": "yaml",
+  ".toml": "toml",
+  ".sh": "bash",
+  ".bash": "bash",
+  ".css": "css",
+  ".scss": "css",
+  ".less": "css",
+  ".html": "html",
+  ".htm": "html",
+  ".templ": "templ",
 };
 
 const LANGUAGE_TO_SERVERS: Record<string, string[]> = {
   typescript: ["typescript-language-server"],
   javascript: ["typescript-language-server"],
-  python: ["pyright"],
+  python: ["pyright", "ruff", "python-lsp-server"],
   rust: ["rust-analyzer"],
   go: ["gopls"],
   csharp: ["omnisharp"],
@@ -51,6 +63,13 @@ const LANGUAGE_TO_SERVERS: Record<string, string[]> = {
   elixir: ["elixir-ls"],
   c: ["clangd"],
   cpp: ["clangd"],
+  lua: ["lua-language-server"],
+  yaml: ["yaml-language-server"],
+  toml: ["taplo"],
+  bash: ["bash-language-server"],
+  css: ["css-lsp"],
+  html: ["html-lsp"],
+  templ: ["templ"],
 };
 
 export interface DetectedLanguage {

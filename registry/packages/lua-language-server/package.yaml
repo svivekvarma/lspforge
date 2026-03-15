@@ -1,0 +1,32 @@
+name: lua-language-server
+description: Language server for Lua with rich IntelliSense features
+languages:
+  - lua
+
+source:
+  github_release:
+    repo: LuaLS/lua-language-server
+    tag: "3.13.6"
+    assets:
+      linux_x64: lua-language-server-3.13.6-linux-x64.tar.gz
+      linux_arm64: lua-language-server-3.13.6-linux-arm64.tar.gz
+      darwin_x64: lua-language-server-3.13.6-darwin-x64.tar.gz
+      darwin_arm64: lua-language-server-3.13.6-darwin-arm64.tar.gz
+      win_x64: lua-language-server-3.13.6-win32-x64.zip
+    bin: bin/lua-language-server
+    extract: tar.gz
+
+lsp:
+  command: bin/lua-language-server
+  args: []
+  file_patterns:
+    - "**/*.lua"
+  extension_to_language:
+    ".lua": lua
+
+platforms:
+  win32:
+    spawn_shell: true
+
+health:
+  timeout_ms: 15000

@@ -1,0 +1,43 @@
+name: clangd
+description: Language server for C, C++, and Objective-C from the LLVM project
+languages:
+  - c
+  - cpp
+  - objective-c
+
+source:
+  github_release:
+    repo: clangd/clangd
+    tag: "19.1.2"
+    assets:
+      linux_x64: clangd-linux-19.1.2.zip
+      darwin_x64: clangd-mac-19.1.2.zip
+      darwin_arm64: clangd-mac-19.1.2.zip
+      win_x64: clangd-windows-19.1.2.zip
+    bin: clangd_19.1.2/bin/clangd
+    extract: zip
+
+lsp:
+  command: clangd_19.1.2/bin/clangd
+  args: ["--background-index"]
+  file_patterns:
+    - "**/*.c"
+    - "**/*.h"
+    - "**/*.cpp"
+    - "**/*.hpp"
+    - "**/*.cc"
+    - "**/*.cxx"
+    - "**/*.m"
+    - "**/*.mm"
+  extension_to_language:
+    ".c": c
+    ".h": c
+    ".cpp": cpp
+    ".hpp": cpp
+    ".cc": cpp
+    ".cxx": cpp
+    ".m": objective-c
+    ".mm": objective-cpp
+
+health:
+  timeout_ms: 15000

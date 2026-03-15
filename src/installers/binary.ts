@@ -31,17 +31,21 @@ export async function installBinary(
 
   await downloadFile(url, downloadPath);
 
-  // Extract based on type
-  if (source.extract === "gzip") {
+  // Determine extraction method: infer from asset filename, falling back to
+  // the explicit `extract` field. This handles cases like rust-analyzer where
+  // Linux assets are .gz but the Windows asset is .zip.
+  const extractType = inferExtractType(assetName) ?? source.extract;
+
+  if (extractType === "gzip") {
     await extractGzip(downloadPath, binPath);
-  } else if (source.extract === "zip") {
+  } else if (extractType === "zip") {
     await extractZip(downloadPath, installDir);
-  } else if (source.extract === "tar.gz") {
+  } else if (extractType === "tar.gz") {
     await extractTarGz(downloadPath, installDir);
   }
   // "none" — the download itself is the binary
 
-  if (source.extract === "none") {
+  if (extractType === "none") {
     await rename(downloadPath, binPath);
   }
 
@@ -59,6 +63,17 @@ export async function installBinary(
     source: "binary",
     version: source.tag,
   };
+}
+
+/**
+ * Infer extraction type from the asset filename extension.
+ * Returns null if the extension doesn't map to a known type.
+ */
+function inferExtractType(filename: string): "gzip" | "zip" | "tar.gz" | "none" | null {
+  if (filename.endsWith(".tar.gz") || filename.endsWith(".tgz")) return "tar.gz";
+  if (filename.endsWith(".zip")) return "zip";
+  if (filename.endsWith(".gz")) return "gzip";
+  return null;
 }
 
 async function extractGzip(src: string, dest: string): Promise<void> {
