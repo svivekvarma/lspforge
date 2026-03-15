@@ -71,6 +71,12 @@ export async function installServer(
     return false;
   }
 
+  if (result.checksumVerified === true) {
+    consola.success("Checksum verified");
+  } else if (result.checksumVerified === "skipped") {
+    consola.warn("No checksum available — skipping verification");
+  }
+
   consola.success(
     `Installed ${serverName} v${result.version} via ${result.source}`,
   );

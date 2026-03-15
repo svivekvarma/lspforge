@@ -10,6 +10,7 @@ export interface InstallResult {
   binPath: string;
   source: string;
   version: string;
+  checksumVerified?: boolean | "skipped";
 }
 
 export type InstallerFn = (
