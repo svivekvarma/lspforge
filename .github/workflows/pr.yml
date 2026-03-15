@@ -23,6 +23,8 @@ jobs:
               - '!docs/**'
               - '!features/**'
               - '!LICENSE'
+              - '!package.json'
+              - '!package-lock.json'
 
   validate:
     name: Validate PR on ${{ matrix.os }}

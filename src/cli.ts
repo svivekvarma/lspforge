@@ -7,9 +7,12 @@ import { checkCommand } from "./commands/check.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { initCommand } from "./commands/init.js";
 import { updateCommand } from "./commands/update.js";
+import { printBanner } from "./utils/banner.js";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json") as { version: string };
+
+printBanner(version);
 
 const main = defineCommand({
   meta: {
