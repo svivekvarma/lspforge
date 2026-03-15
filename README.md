@@ -2,8 +2,6 @@
 
 **The missing package manager for LSP servers in AI coding tools.**
 
-> Think [mason.nvim](https://github.com/williamboman/mason.nvim) — but for Claude Code, GitHub Copilot CLI, and OpenCode/Crush.
-
 [![npm version](https://img.shields.io/npm/v/lspforge)](https://www.npmjs.com/package/lspforge)
 [![license](https://img.shields.io/npm/l/lspforge)](https://github.com/svivekvarma/lspforge/blob/main/LICENSE)
 
@@ -118,12 +116,6 @@ You run: lspforge install pyright
 All servers are **sandboxed** in `~/.lspforge/servers/` — no global pollution, no conflicts.
 
 ## Why lspforge?
-
-### The mason.nvim parallel
-
-Neovim had the exact same problem. LSP servers were painful to install. Then [mason.nvim](https://github.com/williamboman/mason.nvim) came along with a curated registry, sandboxed installs, and declarative config. It has 8,000+ stars.
-
-**AI coding tools are at the same stage Neovim was pre-mason.** lspforge brings the same solution.
 
 ### Windows-first
 

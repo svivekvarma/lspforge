@@ -2,7 +2,7 @@
 
 ## What Is This?
 
-A **mason.nvim-style package manager for AI coding tools** — a CLI that installs, manages, and configures LSP servers across Claude Code, GitHub Copilot CLI, and OpenCode/Crush.
+A **package manager for LSP servers in AI coding tools** — a CLI that installs, manages, and configures LSP servers across Claude Code, GitHub Copilot CLI, and OpenCode/Crush.
 
 ## The Problem
 
@@ -24,9 +24,8 @@ AI coding tools (Claude Code, Copilot CLI, Cursor, Windsurf) need LSP and MCP se
 | **cclsp** | Bridges LSP↔MCP for Claude Code | Doesn't install LSP servers, user must install them manually |
 | **Piebald-AI/claude-code-lsps** | Plugin marketplace for Claude Code | Claude Code only, doesn't install server binaries |
 | **install-mcp** | CLI for MCP installation | MCP only, no LSP |
-| **mason.nvim** | The gold standard — installs 400+ servers | Neovim only, not usable outside Neovim |
 
-**The gap**: No tool does what mason.nvim does (install the actual server binary, handle platform differences, sandbox the install) but for AI coding tools instead of Neovim.
+**The gap**: No tool handles the full pipeline (install the actual server binary, handle platform differences, sandbox the install) for AI coding tools.
 
 ## The Solution
 
@@ -65,7 +64,7 @@ An npm package (CLI tool) that:
 
 ## Competitive Moat
 
-1. **Registry quality** — Curated, tested installation metadata per server per platform (like mason-registry)
+1. **Registry quality** — Curated, tested installation metadata per server per platform
 2. **Platform compatibility** — Deep handling of Windows quirks that nobody else bothers with
 3. **Cross-client config generation** — One source of truth for all your AI tools
 4. **Health diagnostics** — Not just "install and hope" but "install, verify, and report"
@@ -74,7 +73,7 @@ An npm package (CLI tool) that:
 
 - A developer can go from zero to working LSP servers across all their AI tools in < 2 minutes
 - Windows setup works as reliably as macOS/Linux
-- Community contributes server definitions (registry grows like mason-registry)
+- Community contributes server definitions (registry grows organically)
 
 ## Name
 

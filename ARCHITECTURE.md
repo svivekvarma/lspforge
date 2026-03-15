@@ -2,7 +2,7 @@
 
 ## Overview
 
-`lspforge` is an npm CLI that installs, manages, and configures LSP servers for AI coding tools. Think mason.nvim but for Claude Code, Copilot CLI, and OpenCode/Crush.
+`lspforge` is an npm CLI that installs, manages, and configures LSP servers for AI coding tools like Claude Code, Copilot CLI, and OpenCode/Crush.
 
 ## Target Clients
 
@@ -206,7 +206,7 @@ Spawns the server process, sends a proper LSP `initialize` request via JSON-RPC 
 | Concern | Choice | Why |
 |---------|--------|-----|
 | CLI framework | citty | Lightweight, TS-first, zero deps |
-| Registry format | YAML (js-yaml) | Human-readable, comments, mason convention |
+| Registry format | YAML (js-yaml) | Human-readable, comments, widely adopted |
 | Build | tsup | Fast esbuild-based, single output |
 | Test | vitest | ESM native, fast |
 | Logging | consola | Colors, levels, structured |

@@ -15,7 +15,7 @@ const main = defineCommand({
     name: "lspforge",
     version,
     description:
-      "Mason.nvim-style LSP server manager for AI coding tools",
+      "LSP server manager for AI coding tools",
   },
   subCommands: {
     init: initCommand,

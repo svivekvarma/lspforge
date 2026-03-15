@@ -4,8 +4,6 @@
 
 This is **lspforge** — an npm CLI package that installs, manages, and configures LSP servers for AI coding tools (Claude Code, GitHub Copilot CLI, OpenAI Codex, Gemini CLI, VS Code Copilot).
 
-Think "mason.nvim but for AI coding tools instead of Neovim."
-
 ## Key Documents
 
 - `SOUL.md` — Project vision, problem statement, gap analysis, core principles
