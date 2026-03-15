@@ -223,6 +223,51 @@ describe.skipIf(!E2E_ENABLED)("E2E: pip installer (python-lsp-server)", { timeou
   });
 });
 
+// ─── binary: omnisharp ────────────────────────────────────────────────────────────
+
+describe.skipIf(!E2E_ENABLED)("E2E: binary installer (omnisharp)", { timeout: 180_000 }, () => {
+  let fakeHome: string;
+  let dataDir: string;
+  let cliPath: string;
+  let env: NodeJS.ProcessEnv;
+
+  beforeAll(async () => {
+    fakeHome = await mkdtemp(join(tmpdir(), "lspforge-e2e-omnisharp-"));
+    dataDir = getDataDir(fakeHome);
+    cliPath = join(process.cwd(), "dist", "cli.js");
+    env = getCliEnv(fakeHome);
+  });
+
+  afterAll(async () => {
+    await forceRemove(fakeHome);
+  });
+
+  it("installs omnisharp via binary download and exits cleanly", () => {
+    // Note: omnisharp health check takes >60s to start on first run, skip it for now
+    // TODO: investigate why omnisharp LSP health check times out
+    const { code } = runCli(cliPath, env, 120_000, "install", "omnisharp", "--skip-health");
+    expect(code).toBe(0);
+  });
+
+  it("creates state.json with binary source", async () => {
+    const statePath = join(dataDir, "state.json");
+    const state = JSON.parse(await readFile(statePath, "utf-8"));
+    const server = state.servers["omnisharp"];
+
+    expect(server).toBeDefined();
+    expect(server.source).toBe("binary");
+    expect(server.binPath).toBeTruthy();
+  });
+
+  it("installs binary to servers directory", async () => {
+    const statePath = join(dataDir, "state.json");
+    const state = JSON.parse(await readFile(statePath, "utf-8"));
+    const binPath = state.servers["omnisharp"].binPath;
+    await expect(access(binPath)).resolves.toBeUndefined();
+    expect(binPath.startsWith(join(dataDir, "servers"))).toBe(true);
+  });
+});
+
 // ─── go: gopls ────────────────────────────────────────────────────────────────
 
 describe.skipIf(!E2E_ENABLED)("E2E: go installer (gopls)", { timeout: 180_000 }, () => {

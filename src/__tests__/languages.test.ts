@@ -171,6 +171,30 @@ describe("detectLanguages", () => {
     }
   });
 
+  it("detects C# from .csproj files", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "lspforge-test-"));
+    try {
+      await writeFile(join(dir, "project.csproj"), "");
+      const result = await detectLanguages(dir);
+      expect(result.some((r) => r.language === "csharp")).toBe(true);
+      const csharp = result.find((r) => r.language === "csharp")!;
+      expect(csharp.recommendedServers).toContain("omnisharp");
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+
+  it("detects C# from .sln files", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "lspforge-test-"));
+    try {
+      await writeFile(join(dir, "solution.sln"), "");
+      const result = await detectLanguages(dir);
+      expect(result.some((r) => r.language === "csharp")).toBe(true);
+    } finally {
+      await rm(dir, { recursive: true });
+    }
+  });
+
   it("detects multiple languages", async () => {
     const dir = await mkdtemp(join(tmpdir(), "lspforge-test-"));
     try {

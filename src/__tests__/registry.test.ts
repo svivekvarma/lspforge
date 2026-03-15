@@ -18,6 +18,7 @@ describe("registry", () => {
     "templ",
     "css-lsp",
     "html-lsp",
+    "omnisharp",
   ];
 
   it("lists all packages", async () => {
@@ -178,6 +179,17 @@ describe("registry", () => {
     expect(pkg!.source.github_release!.repo).toBe("clangd/clangd");
     expect(pkg!.source.github_release!.extract).toBe("zip");
     expect(pkg!.languages).toEqual(expect.arrayContaining(["c", "cpp"]));
+  });
+
+  it("loads omnisharp with github_release source for C#", async () => {
+    const pkg = await loadPackage("omnisharp");
+    expect(pkg).not.toBeNull();
+    expect(pkg!.name).toBe("omnisharp");
+    expect(pkg!.languages).toContain("csharp");
+    expect(pkg!.source.github_release).toBeDefined();
+    expect(pkg!.source.github_release!.repo).toBe("OmniSharp/omnisharp-roslyn");
+    expect(pkg!.lsp.command).toBe("omnisharp");
+    expect(pkg!.lsp.args).toContain("--languageserver");
   });
 
   // --- search ---
