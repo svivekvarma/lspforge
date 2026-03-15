@@ -3,7 +3,9 @@ import { chmod, access, rename } from "node:fs/promises";
 import { createGunzip } from "node:zlib";
 import { createReadStream, createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
-import { downloadFile } from "../utils/download.js";
+import { downloadFile, verifyChecksum } from "../utils/download.js";
+import { unlink } from "node:fs/promises";
+import consola from "consola";
 import type { PackageDefinition } from "../core/registry.js";
 import type { PlatformInfo } from "../core/platform.js";
 import type { InstallResult } from "./index.js";
@@ -30,6 +32,21 @@ export async function installBinary(
   const binPath = join(installDir, binName);
 
   await downloadFile(url, downloadPath);
+
+  // Verify checksum if available
+  const expectedChecksum = source.checksums?.[platformInfo.key];
+  if (expectedChecksum) {
+    const valid = await verifyChecksum(downloadPath, expectedChecksum);
+    if (!valid) {
+      await unlink(downloadPath);
+      throw new Error(
+        `Checksum verification failed for ${assetName}. The download has been deleted.`,
+      );
+    }
+    consola.success("Checksum verified");
+  } else {
+    consola.warn("No checksum available — skipping verification");
+  }
 
   // Determine extraction method: infer from asset filename, falling back to
   // the explicit `extract` field. This handles cases like rust-analyzer where

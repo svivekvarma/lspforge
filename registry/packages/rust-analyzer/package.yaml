@@ -13,6 +13,12 @@ source:
       darwin_x64: rust-analyzer-x86_64-apple-darwin.gz
       darwin_arm64: rust-analyzer-aarch64-apple-darwin.gz
       win_x64: rust-analyzer-x86_64-pc-windows-msvc.zip
+    checksums:
+      linux_x64: "2e7b084f631da0ae31c6abbec245809096d19bced391e8ed960a18667b2e0328"
+      linux_arm64: "a9c3b5359b1ed3269ae93bdafcbbedb6cebb092d12c2fd0d400871b3a0051d3e"
+      darwin_x64: "2fa435ce990e2093679db01aea3a91926ff0c3f34c8955ea0585ba650a4ba7bd"
+      darwin_arm64: "754230270a3217af582107b917cbb161057124c188e3e38e7db1576dd0c53711"
+      win_x64: "5b03345370b1c82dede59e52048503f0f55534317fabc552cc066f70e5d8a435"
     bin: rust-analyzer
     extract: gzip
 

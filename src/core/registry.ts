@@ -13,6 +13,7 @@ export interface PackageSource {
     repo: string;
     tag: string;
     assets: Record<string, string>;
+    checksums?: Record<string, string>;
     bin: string;
     extract: "gzip" | "zip" | "tar.gz" | "none";
   };
