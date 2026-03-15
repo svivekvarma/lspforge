@@ -6,7 +6,7 @@ import { createHash } from "node:crypto";
 import type { PackageDefinition } from "../core/registry.js";
 import type { PlatformInfo } from "../core/platform.js";
 
-// Mock downloadFile and consola before importing installBinary
+// Mock downloadFile before importing installBinary
 vi.mock("../utils/download.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../utils/download.js")>();
   return {
@@ -15,16 +15,8 @@ vi.mock("../utils/download.js", async (importOriginal) => {
   };
 });
 
-vi.mock("consola", () => ({
-  default: {
-    success: vi.fn(),
-    warn: vi.fn(),
-  },
-}));
-
 import { installBinary } from "../installers/binary.js";
 import { downloadFile, verifyChecksum } from "../utils/download.js";
-import consola from "consola";
 
 const mockDownloadFile = vi.mocked(downloadFile);
 
@@ -67,22 +59,23 @@ describe("installBinary checksum verification", () => {
     installDir = await mkdtemp(join(tmpdir(), "lspforge-test-"));
   });
 
-  it("logs warning when no checksum is provided", async () => {
+  afterEach(async () => {
+    await rm(installDir, { recursive: true, force: true }).catch(() => {});
+  });
+
+  it("returns checksumVerified as skipped when no checksum is provided", async () => {
     const pkg = makePkg();
 
-    // downloadFile mock: create the fake binary file
     mockDownloadFile.mockImplementation(async (_url, destPath) => {
       await writeFile(destPath, "binary-content");
     });
 
-    await installBinary(pkg, installDir, platformInfo);
+    const result = await installBinary(pkg, installDir, platformInfo);
 
-    expect(consola.warn).toHaveBeenCalledWith(
-      "No checksum available — skipping verification",
-    );
+    expect(result.checksumVerified).toBe("skipped");
   });
 
-  it("succeeds when checksum matches", async () => {
+  it("returns checksumVerified as true when checksum matches", async () => {
     const content = "binary-content";
     const hash = createHash("sha256").update(content).digest("hex");
     const pkg = makePkg({ linux_x64: hash });
@@ -91,9 +84,9 @@ describe("installBinary checksum verification", () => {
       await writeFile(destPath, content);
     });
 
-    await installBinary(pkg, installDir, platformInfo);
+    const result = await installBinary(pkg, installDir, platformInfo);
 
-    expect(consola.success).toHaveBeenCalledWith("Checksum verified");
+    expect(result.checksumVerified).toBe(true);
   });
 
   it("fails and deletes download on checksum mismatch", async () => {
@@ -105,40 +98,38 @@ describe("installBinary checksum verification", () => {
 
     await expect(
       installBinary(pkg, installDir, platformInfo),
-    ).rejects.toThrow("Checksum verification failed");
+    ).rejects.toThrow("Checksum verification failed for test-bin");
 
     // The downloaded file should be deleted
     await expect(
       access(join(installDir, "test-bin")),
     ).rejects.toThrow();
   });
-
-  // Clean up temp dirs
-  afterEach(async () => {
-    await rm(installDir, { recursive: true, force: true }).catch(() => {});
-  });
 });
 
 describe("verifyChecksum utility", () => {
+  let dir: string;
+  let filePath: string;
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), "lspforge-cksum-"));
+    filePath = join(dir, "testfile");
+  });
+
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+
   it("returns true for matching hash", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lspforge-cksum-"));
-    const filePath = join(dir, "testfile");
     const content = "hello world";
     const expected = createHash("sha256").update(content).digest("hex");
 
     await writeFile(filePath, content);
     expect(await verifyChecksum(filePath, expected)).toBe(true);
-
-    await rm(dir, { recursive: true, force: true });
   });
 
   it("returns false for mismatched hash", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "lspforge-cksum-"));
-    const filePath = join(dir, "testfile");
-
     await writeFile(filePath, "hello world");
     expect(await verifyChecksum(filePath, "wronghash")).toBe(false);
-
-    await rm(dir, { recursive: true, force: true });
   });
 });
