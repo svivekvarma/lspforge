@@ -1,0 +1,30 @@
+name: omnisharp
+description: OmniSharp language server for C# and .NET
+languages:
+  - csharp
+
+source:
+  npm:
+    package: omnisharp
+    bin: omnisharp
+    version: "1.39.11"
+
+lsp:
+  command: omnisharp
+  args:
+    - "-z"
+    - "--languageserver"
+  file_patterns:
+    - "**/*.cs"
+    - "**/project.json"
+    - "**/*.csproj"
+    - "**/*.sln"
+  extension_to_language:
+    ".cs": csharp
+
+platforms:
+  win32:
+    spawn_shell: true
+
+health:
+  timeout_ms: 15000
