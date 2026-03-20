@@ -15,6 +15,10 @@ import {
   configureOpenCode,
   unconfigureOpenCode,
 } from "../clients/opencode.js";
+import {
+  configureNeovim,
+  unconfigureNeovim,
+} from "../clients/neovim.js";
 
 // ─── Claude Code ───────────────────────────────────────────────────────────
 // configureClaudeCode reads homedir() at call time, so overriding
@@ -378,5 +382,74 @@ describe("OpenCode config writer", () => {
 
     const config = JSON.parse(await readFile(configPath, "utf-8"));
     expect(config.lsp.pyright).toBeDefined();
+  });
+});
+
+// ─── Neovim ────────────────────────────────────────────────────────────────
+
+describe("Neovim config writer", () => {
+  let tempDir: string;
+  let originalXdgConfigHome: string | undefined;
+
+  beforeEach(async () => {
+    tempDir = await mkdtemp(join(tmpdir(), "lspforge-neovim-test-"));
+    originalXdgConfigHome = process.env.XDG_CONFIG_HOME;
+    process.env.XDG_CONFIG_HOME = tempDir;
+  });
+
+  afterEach(async () => {
+    if (originalXdgConfigHome === undefined) {
+      delete process.env.XDG_CONFIG_HOME;
+    } else {
+      process.env.XDG_CONFIG_HOME = originalXdgConfigHome;
+    }
+    await rm(tempDir, { recursive: true });
+  });
+
+  it("creates lua config from scratch", async () => {
+    await configureNeovim({
+      serverName: "pyright",
+      binPath: "/usr/bin/pyright",
+      args: ["--stdio"],
+      extensionToLanguage: { ".py": "python" },
+    });
+
+    const configPath = join(tempDir, "nvim", "plugin", "lspforge", "pyright.lua");
+    expect(existsSync(configPath)).toBe(true);
+
+    const content = await readFile(configPath, "utf-8");
+    expect(content).toContain("-- _managed_by: lspforge");
+    expect(content).toContain("vim.lsp.config['pyright'] = {");
+    expect(content).toContain("cmd = { '/usr/bin/pyright', '--stdio' }");
+    expect(content).toContain("filetypes = { 'python' }");
+    expect(content).toContain("vim.lsp.enable('pyright')");
+  });
+
+  it("unconfigure removes file if managed by lspforge", async () => {
+    const configPath = join(tempDir, "nvim", "plugin", "lspforge", "pyright.lua");
+    await mkdir(join(tempDir, "nvim", "plugin", "lspforge"), { recursive: true });
+
+    await configureNeovim({
+      serverName: "pyright",
+      binPath: "/usr/bin/pyright",
+      args: ["--stdio"],
+      extensionToLanguage: { ".py": "python" },
+    });
+
+    expect(existsSync(configPath)).toBe(true);
+
+    await unconfigureNeovim("pyright");
+
+    expect(existsSync(configPath)).toBe(false);
+  });
+
+  it("unconfigure does not remove file if not managed by lspforge", async () => {
+    const configPath = join(tempDir, "nvim", "plugin", "lspforge", "pyright.lua");
+    await mkdir(join(tempDir, "nvim", "plugin", "lspforge"), { recursive: true });
+    await writeFile(configPath, "print('custom config')", "utf-8");
+
+    await unconfigureNeovim("pyright");
+
+    expect(existsSync(configPath)).toBe(true);
   });
 });

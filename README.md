@@ -75,6 +75,7 @@ lspforge install pyright
 | **Claude Code** | Native (plugin system) | `~/.claude/plugins/lspforge/.lsp.json` | Load plugin: `claude --plugin-dir ~/.claude/plugins/lspforge` |
 | **GitHub Copilot CLI** | Native | `~/.copilot/lsp-config.json` | Restart Copilot CLI to pick up config |
 | **OpenCode / Crush** | Native | `opencode.json` or `.crush.json` in project root | Restart OpenCode/Crush |
+| **Neovim** | Native (0.11+) | `~/.config/nvim/plugin/lspforge/<server>.lua` | Auto-loaded by Neovim |
 
 ### Not supported (no LSP)
 
@@ -183,7 +184,7 @@ Tested across **3 operating systems** on every push via GitHub Actions.
 
 - [x] Core CLI (init, install, uninstall, list, check, doctor)
 - [x] npm, pip, cargo, go, binary installers
-- [x] Claude Code, Copilot CLI, OpenCode/Crush clients
+- [x] Claude Code, Copilot CLI, OpenCode/Crush, Neovim clients
 - [x] 5 bundled server definitions
 - [x] Cross-platform CI (Linux, Windows, macOS)
 - [x] LSP health checks
