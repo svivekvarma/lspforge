@@ -409,7 +409,7 @@ describe("Neovim config writer", () => {
   it("creates lua config from scratch", async () => {
     await configureNeovim({
       serverName: "pyright",
-      binPath: "/usr/bin/pyright",
+      binPath: join("usr", "bin", "pyright"),
       args: ["--stdio"],
       extensionToLanguage: { ".py": "python" },
     });
@@ -420,7 +420,10 @@ describe("Neovim config writer", () => {
     const content = await readFile(configPath, "utf-8");
     expect(content).toContain("-- _managed_by: lspforge");
     expect(content).toContain("vim.lsp.config['pyright'] = {");
-    expect(content).toContain("cmd = { '/usr/bin/pyright', '--stdio' }");
+
+    // Check paths with escaped backslashes for Windows, or regular for Unix
+    const escapedBinPath = join("usr", "bin", "pyright").replace(/\\/g, "\\\\");
+    expect(content).toContain(`cmd = { '${escapedBinPath}', '--stdio' }`);
     expect(content).toContain("filetypes = { 'python' }");
     expect(content).toContain("vim.lsp.enable('pyright')");
   });

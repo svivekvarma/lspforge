@@ -30,9 +30,13 @@ export async function configureNeovim(
   // Convert extensions (e.g., .ts) to Neovim filetypes (e.g., typescript)
   const filetypes = Array.from(new Set(Object.values(config.extensionToLanguage)));
 
+  // Escape backslashes for Windows paths in Lua strings
+  const escapedBinPath = config.binPath.replace(/\\/g, "\\\\");
+  const escapedArgs = config.args.map(arg => arg.replace(/\\/g, "\\\\"));
+
   const luaConfig = `-- _managed_by: lspforge
 vim.lsp.config['${config.serverName}'] = {
-  cmd = { '${config.binPath}', ${config.args.map(arg => `'${arg}'`).join(", ")} },
+  cmd = { '${escapedBinPath}', ${escapedArgs.map(arg => `'${arg}'`).join(", ")} },
   filetypes = { ${filetypes.map(ft => `'${ft}'`).join(", ")} },
 }
 vim.lsp.enable('${config.serverName}')

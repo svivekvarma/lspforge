@@ -193,7 +193,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: pip installer (python-lsp-server)", { timeou
     dataDir = getDataDir(fakeHome);
     cliPath = join(process.cwd(), "dist", "cli.js");
     env = getCliEnv(fakeHome);
-  });
+  }, 30_000);
 
   afterAll(async () => {
     await forceRemove(fakeHome);
@@ -380,7 +380,7 @@ describe.skipIf(!E2E_ENABLED)("E2E: update command (typescript-language-server)"
     // Install the server at the current registry version
     const { code } = runCli(cliPath, env, 90_000, "install", "typescript-language-server");
     expect(code).toBe(0);
-  });
+  }, 180_000);
 
   afterAll(async () => {
     await forceRemove(fakeHome);
